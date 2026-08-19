@@ -12,6 +12,8 @@ import {
   Send,
   Lock,
   Hexagon,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -42,10 +44,19 @@ export default function LandingPage() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/paywall"
-            className="text-xs text-[#64748B] hover:text-[#00F5D4] font-neo-mono font-bold transition-colors uppercase tracking-wider"
+            href="/login"
+            className="flex items-center gap-1 text-xs text-[#E2E8F0] hover:text-[#00F5D4] font-neo-mono font-bold transition-colors uppercase tracking-wider px-3 py-1.5 rounded-[2px] bg-[#090E1C] border border-cyan-500/20"
           >
-            // PAYWALL TIERS
+            <LogIn className="w-3.5 h-3.5 text-[#00F5D4]" />
+            ВХІД
+          </Link>
+
+          <Link
+            href="/register"
+            className="flex items-center gap-1 text-xs text-[#00FF9D] hover:text-white font-neo-mono font-bold transition-colors uppercase tracking-wider px-3 py-1.5 rounded-[2px] bg-[#00FF9D]/10 border border-[#00FF9D]/30"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            РЕЄСТРАЦІЯ
           </Link>
 
           <Link
@@ -79,7 +90,7 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
           <Link
             href="/pro-dashboard?demo=true"
-            className="w-full sm:w-auto px-8 py-3 bg.00F5D4 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[3px] text-xs font-neo-mono transition-all shadow-[0_0_20px_rgba(0,245,212,0.4)] flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto px-8 py-3 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[3px] text-xs font-neo-mono transition-all shadow-[0_0_20px_rgba(0,245,212,0.4)] flex items-center justify-center gap-2 group"
           >
             ENTER PRO TERMINAL
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
