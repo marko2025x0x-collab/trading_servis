@@ -390,6 +390,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </button>
               </div>
 
+              {/* Link to Dedicated Pages */}
+              <div className="flex gap-2">
+                <a
+                  href="/login"
+                  className="flex-1 py-1.5 bg-[#090d16] hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 rounded text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
+                >
+                  <span>ВІДКРИТИ СТОРІНКУ /login</span>
+                </a>
+                <a
+                  href="/register"
+                  className="flex-1 py-1.5 bg-[#090d16] hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
+                >
+                  <span>ВІДКРИТИ СТОРІНКУ /register</span>
+                </a>
+              </div>
+
               {/* Feedback Alert Banner */}
               {authFeedback && (
                 <div
