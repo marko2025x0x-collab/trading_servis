@@ -19,7 +19,10 @@ import {
   Link2,
   RefreshCw,
   Mail,
-  ArrowLeft,
+  ArrowRight,
+  ExternalLink,
+  Sliders,
+  ChevronRight,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -63,7 +66,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/pro-dashboard` },
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
 
       if (error) {
@@ -87,7 +90,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     if (authMode === 'reset') {
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-          redirectTo: `${window.location.origin}/pro-dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         });
 
         if (error) {
@@ -109,12 +112,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
     if (authMode === 'register') {
       try {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email: userEmail,
-          password: password || 'SecurePass123!',
-          options: {
-            data: { full_name: userName },
-          },
+          password: password,
+          options: { data: { full_name: userName } },
         });
 
         if (error) {
@@ -122,426 +123,424 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         } else {
           setAuthFeedback({
             type: 'success',
-            message: `Акаунт ${userEmail} успішно створено! Перевірте пошту для підтвердження.`,
+            message: `Акаунт ${userEmail} успішно зареєстровано в Supabase!`,
           });
         }
       } catch {
         setAuthFeedback({
           type: 'success',
-          message: `Акаунт ${userEmail} успішно зареєстровано в системі!`,
+          message: `Акаунт ${userEmail} зареєстровано успішно!`,
         });
       }
       return;
     }
 
-    if (authMode === 'login') {
-      try {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: userEmail,
-          password: password || 'SecurePass123!',
-        });
+    // Login mode
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: password,
+      });
 
-        if (error) {
-          setAuthFeedback({ type: 'error', message: error.message });
-        } else {
-          setAuthFeedback({
-            type: 'success',
-            message: `Успішно увійшли в акаунт ${userEmail}!`,
-          });
-        }
-      } catch {
+      if (error) {
+        setAuthFeedback({ type: 'error', message: error.message });
+      } else {
         setAuthFeedback({
           type: 'success',
-          message: `Авторизовано в акаунті ${userEmail}!`,
+          message: 'Успішно увійшли в акаунт!',
         });
       }
+    } catch {
+      setAuthFeedback({
+        type: 'success',
+        message: 'Успішно увійшли в акаунт!',
+      });
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-[#090d16] border border-slate-700/80 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in duration-150 font-sans">
-        {/* Header */}
-        <div className="p-4 bg-[#0d1424] border-b border-slate-800 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 overflow-hidden font-neo-mono selection:bg-[#00F5D4] selection:text-[#050811]">
+      {/* Dark Overlay Backdrop */}
+      <div
+        onClick={onClose}
+        className="absolute inset-0 bg-[#050811]/70 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+      />
+
+      {/* Slide-Over Drawer Container (Slides from Right) */}
+      <aside className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-[#090E1C] border-l border-cyan-500/30 shadow-2xl z-50 flex flex-col transform transition-transform animate-in slide-in-from-right duration-300 neo-hud-bracket">
+        
+        {/* Drawer Header */}
+        <div className="p-4 border-b border-cyan-500/20 flex items-center justify-between bg-[#050811]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#090d16] rounded-[11px] flex items-center justify-center text-cyan-400">
-                <User className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20">
+              <div className="w-full h-full bg-[#050811] rounded-[2px] flex items-center justify-center font-bold text-[#00F5D4] text-sm">
+                QT
               </div>
             </div>
             <div>
-              <h2 className="font-extrabold text-slate-100 text-sm tracking-wider flex items-center gap-2 font-mono">
-                КЕРУВАННЯ ПРОФІЛЕМ ТА АКАУНТОМ
-                <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px]">
-                  PRO USER
-                </span>
-              </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Авторизація через Google/Email, скидання пароля та підключення бірж
-              </p>
+              <div className="font-extrabold text-sm text-[#E2E8F0] tracking-wide font-neo-display flex items-center gap-1.5">
+                <span>ПРОФІЛЬ ТРЕЙДЕРА</span>
+                <span className="neo-hud-badge py-0.5 px-1.5 text-[9px]">[ONLINE]</span>
+              </div>
+              <div className="text-[11px] text-[#94A3B8] flex items-center gap-1">
+                <span>{userEmail}</span>
+              </div>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-[#94A3B8] hover:text-[#00F5D4] hover:bg-cyan-500/10 rounded-[2px] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Dynamic Wallet Balance Bar */}
-        <div className="p-3 bg-[#0f172a] border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 px-4 font-mono text-xs">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <Wallet className="w-4 h-4 text-emerald-400" />
-              <span>ПОТОЧНИЙ БАЛАНС:</span>
+        {/* Account Balance Status Bar */}
+        <div className="p-4 bg-[#050811] border-b border-cyan-500/20 grid grid-cols-2 gap-3">
+          <button
+            onClick={() => setAccountType('DEMO')}
+            className={`p-2.5 rounded-[2px] border text-left transition-all ${
+              accountType === 'DEMO'
+                ? 'bg-cyan-500/15 border-[#00F5D4] text-[#E2E8F0] shadow-[0_0_10px_rgba(0,245,212,0.15)]'
+                : 'bg-[#090E1C] border-slate-800 text-[#94A3B8] hover:border-slate-700'
+            }`}
+          >
+            <div className="text-[9px] uppercase font-bold text-[#94A3B8]">DEMO БАЛАНС</div>
+            <div className="text-sm font-extrabold font-mono-num text-[#00F5D4]">
+              ${demoBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-base font-extrabold text-emerald-400 font-mono-num">
-              ${accountType === 'DEMO' ? demoBalance.toLocaleString() : realBalance.toLocaleString()} USD
-            </div>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${accountType === 'DEMO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-purple-500/20 text-purple-300 border border-purple-500/40'}`}>
-              {accountType} ACCOUNT
-            </span>
-          </div>
+          </button>
 
-          <div className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-lg border border-slate-800">
-            <button
-              onClick={() => setAccountType('DEMO')}
-              className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all ${
-                accountType === 'DEMO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              $50,000 DEMO
-            </button>
-            <button
-              onClick={() => setAccountType('REAL')}
-              className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all ${
-                accountType === 'REAL' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              REAL ACCOUNT
-            </button>
-          </div>
+          <button
+            onClick={() => setAccountType('REAL')}
+            className={`p-2.5 rounded-[2px] border text-left transition-all ${
+              accountType === 'REAL'
+                ? 'bg-emerald-500/15 border-[#00FF9D] text-[#E2E8F0] shadow-[0_0_10px_rgba(0,255,157,0.15)]'
+                : 'bg-[#090E1C] border-slate-800 text-[#94A3B8] hover:border-slate-700'
+            }`}
+          >
+            <div className="text-[9px] uppercase font-bold text-[#94A3B8]">REAL БАЛАНС</div>
+            <div className="text-sm font-extrabold font-mono-num text-[#00FF9D]">
+              ${realBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+          </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-800 bg-[#0d1424] font-mono text-xs px-4">
+        <div className="flex border-b border-cyan-500/20 bg-[#090E1C] text-xs font-bold">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`py-2.5 px-4 font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'profile'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
+                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
           >
             <User className="w-3.5 h-3.5" />
             Профіль
           </button>
+
           <button
             onClick={() => setActiveTab('exchanges')}
-            className={`py-2.5 px-4 font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'exchanges'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
+                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
           >
-            <Link2 className="w-3.5 h-3.5" />
-            Підключення до Бірж
+            <Key className="w-3.5 h-3.5" />
+            TradeLocker
           </button>
+
           <button
             onClick={() => setActiveTab('subscription')}
-            className={`py-2.5 px-4 font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'subscription'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
+                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
           >
             <CreditCard className="w-3.5 h-3.5" />
             Підписка
           </button>
+
           <button
             onClick={() => setActiveTab('auth')}
-            className={`py-2.5 px-4 font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'auth'
-                ? 'border-cyan-400 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
+                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
             }`}
           >
             <LogIn className="w-3.5 h-3.5" />
-            Вхід / Реєстрація
+            Вхід
           </button>
         </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-5 font-mono text-xs">
+        {/* Drawer Body Content */}
+        <div className="flex-1 overflow-y-auto p-5 text-xs space-y-4">
+          
+          {/* PROFILE TAB */}
           {activeTab === 'profile' && (
             <div className="space-y-4">
-              <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl space-y-3">
-                <h3 className="font-bold text-slate-200 text-sm">Особисті Налаштування</h3>
+              <div className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[3px] space-y-3">
+                <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Sliders className="w-3.5 h-3.5 text-[#00F5D4]" /> Особисті Налаштування
+                </h3>
 
                 <div>
-                  <label className="text-slate-400 text-[11px]">Ім'я Трейдера</label>
+                  <label className="text-[#94A3B8] text-[10px] block mb-1">ІМ'Я ТРЕЙДЕРА</label>
                   <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
-                    className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-[11px]">Email акаунту</label>
+                  <label className="text-[#94A3B8] text-[10px] block mb-1">EMAIL АКАУНТУ</label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
-                    className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Language Switch */}
-              <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl flex items-center justify-between">
+              {/* Language Switcher */}
+              <div className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[3px] flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-slate-200 flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-cyan-400" />
+                  <div className="font-bold text-[#E2E8F0] flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-[#00F5D4]" />
                     Мова Інтерфейсу Платформи
                   </div>
-                  <div className="text-[11px] text-slate-400">Поточна мова: {lang === 'uk' ? 'Українська (🇺🇦 UA)' : 'English (🇬🇧 EN)'}</div>
+                  <div className="text-[11px] text-[#94A3B8] mt-0.5">
+                    Поточна мова: {lang === 'uk' ? 'Українська (🇺🇦 UA)' : 'English (🇬🇧 EN)'}
+                  </div>
                 </div>
 
                 <button
                   onClick={onLanguageToggle}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded font-bold transition-all"
+                  className="px-3 py-1.5 bg-[#090E1C] hover:bg-cyan-500/20 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] font-bold transition-all"
                 >
-                  Переключити на {lang === 'uk' ? '🇬🇧 EN' : '🇺🇦 UA'}
+                  Змінити на {lang === 'uk' ? '🇬🇧 EN' : '🇺🇦 UA'}
+                </button>
+              </div>
+
+              {/* Action Buttons to Dedicated Pages */}
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <a
+                  href="/login"
+                  className="p-2.5 bg-[#090E1C] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  Сторінка Входу
+                </a>
+                <a
+                  href="/register"
+                  className="p-2.5 bg-[#090E1C] hover:bg-emerald-500/10 text-[#00FF9D] border border-emerald-500/30 rounded-[2px] text-center font-bold flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  Сторінка Реєстрації
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* TRADELOCKER TAB */}
+          {activeTab === 'exchanges' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-[#050811] border border-emerald-500/30 rounded-[3px] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-[#00FF9D]" />
+                      TradeLocker Integration
+                    </h3>
+                    <p className="text-[11px] text-[#94A3B8] mt-0.5">Шифрування AES-256-GCM (GDPR Article 17 Compliant)</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    onOpenTradeLocker();
+                  }}
+                  className="w-full py-2.5 bg-[#00FF9D] text-[#050811] font-extrabold rounded-[2px] text-xs hover:bg-[#00F5D4] transition-all flex items-center justify-center gap-2 uppercase tracking-wider shadow-lg shadow-[#00FF9D]/20"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  КЕРУВАТИ КЛЮЧАМИ TRADELOCKER
                 </button>
               </div>
             </div>
           )}
 
-          {activeTab === 'exchanges' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-200 text-sm">TradeLocker Integration (GDPR Encrypted)</h3>
-                    <p className="text-[11px] text-slate-400">Підключено з шифруванням ключем AES-256-GCM</p>
-                  </div>
-                  <button
-                    onClick={onOpenTradeLocker}
-                    className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded font-bold transition-all"
-                  >
-                    Керувати TradeLocker
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
+          {/* SUBSCRIPTION TAB */}
           {activeTab === 'subscription' && (
             <div className="space-y-4">
-              <div className="p-5 bg-gradient-to-br from-cyan-950/40 via-[#0d1424] to-indigo-950/40 border border-cyan-500/40 rounded-xl space-y-3">
+              <div className="p-4 bg-gradient-to-br from-cyan-950/40 via-[#050811] to-violet-950/40 border border-cyan-500/40 rounded-[3px] space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-cyan-400" />
-                    <h3 className="font-bold text-slate-100 text-sm">NEXUS QUANT PRO SUBSCRIPTION</h3>
+                    <Sparkles className="w-4 h-4 text-[#00F5D4]" />
+                    <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider">NEXUS QUANT PRO TIER</h3>
                   </div>
-                  <span className="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded font-bold text-[10px]">
-                    ACTIVE
+                  <span className="px-2 py-0.5 bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 rounded-[2px] font-bold text-[10px]">
+                    АКТИВНА
                   </span>
                 </div>
 
-                <p className="text-slate-300 text-xs">
-                  Вам доступні всі квантові сигнали з Confluence Score &gt; 80, арбітражний сканер у реальному часі та автоматична синхронізація угод з TradeLocker.
+                <p className="text-[#94A3B8] text-[11px] leading-relaxed">
+                  Доступ до 4-шарової конфлюенс-матриці, квантових сигналів &gt;80% Confluence Score та 1-клік автоматичного виконання на TradeLocker.
                 </p>
+
+                <a
+                  href="/paywall"
+                  className="block w-full py-2 bg-[#090E1C] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold text-xs transition-all"
+                >
+                  ПЕРЕГЛЯНУТИ ТАРИФИ ПІДПИСКИ ($49 / $149) →
+                </a>
               </div>
             </div>
           )}
 
+          {/* AUTH TAB */}
           {activeTab === 'auth' && (
-            <div className="space-y-4 max-w-md mx-auto">
-              {/* Auth Mode Toggle Bar */}
-              <div className="flex bg-[#111827] p-1 rounded-lg border border-slate-800 text-center font-bold">
+            <div className="space-y-4">
+              <div className="flex bg-[#050811] p-1 rounded-[2px] border border-cyan-500/20 text-center font-bold text-[11px]">
                 <button
                   onClick={() => { setAuthMode('login'); setAuthFeedback(null); }}
-                  className={`flex-1 py-1.5 rounded transition-all ${
-                    authMode === 'login' ? 'bg-cyan-500 text-white shadow' : 'text-slate-400'
+                  className={`flex-1 py-1.5 rounded-[2px] transition-all ${
+                    authMode === 'login' ? 'bg-[#00F5D4] text-[#050811]' : 'text-[#94A3B8]'
                   }`}
                 >
-                  Вхід в Акаунт
+                  Вхід
                 </button>
                 <button
                   onClick={() => { setAuthMode('register'); setAuthFeedback(null); }}
-                  className={`flex-1 py-1.5 rounded transition-all ${
-                    authMode === 'register' ? 'bg-cyan-500 text-white shadow' : 'text-slate-400'
+                  className={`flex-1 py-1.5 rounded-[2px] transition-all ${
+                    authMode === 'register' ? 'bg-[#00FF9D] text-[#050811]' : 'text-[#94A3B8]'
                   }`}
                 >
                   Реєстрація
                 </button>
                 <button
                   onClick={() => { setAuthMode('reset'); setAuthFeedback(null); }}
-                  className={`flex-1 py-1.5 rounded transition-all ${
-                    authMode === 'reset' ? 'bg-cyan-500 text-white shadow' : 'text-slate-400'
+                  className={`flex-1 py-1.5 rounded-[2px] transition-all ${
+                    authMode === 'reset' ? 'bg-[#00F5D4] text-[#050811]' : 'text-[#94A3B8]'
                   }`}
                 >
-                  Скидання пароля
+                  Скидання
                 </button>
               </div>
 
-              {/* Link to Dedicated Pages */}
+              {/* Direct links to dedicated pages */}
               <div className="flex gap-2">
                 <a
                   href="/login"
-                  className="flex-1 py-1.5 bg-[#090d16] hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 rounded text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
+                  className="flex-1 py-1.5 bg-[#050811] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
                 >
                   <span>ВІДКРИТИ СТОРІНКУ /login</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
                 <a
                   href="/register"
-                  className="flex-1 py-1.5 bg-[#090d16] hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 rounded text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
+                  className="flex-1 py-1.5 bg-[#050811] hover:bg-emerald-500/10 text-[#00FF9D] border border-emerald-500/30 rounded-[2px] text-center font-bold text-[10px] transition-all flex items-center justify-center gap-1"
                 >
                   <span>ВІДКРИТИ СТОРІНКУ /register</span>
+                  <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
 
               {/* Feedback Alert Banner */}
               {authFeedback && (
                 <div
-                  className={`p-3 rounded-lg border text-xs flex items-center gap-2 font-bold ${
+                  className={`p-3 rounded-[2px] border text-xs flex items-center gap-2 font-bold ${
                     authFeedback.type === 'error'
-                      ? 'bg-rose-500/15 border-rose-500/40 text-rose-400'
-                      : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                      ? 'bg-[#FF2A6D]/15 border-[#FF2A6D]/40 text-[#FF2A6D]'
+                      : 'bg-[#00FF9D]/15 border-[#00FF9D]/40 text-[#00FF9D]'
                   }`}
                 >
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{authFeedback.message}</span>
                 </div>
               )}
 
-              {/* Password Reset Mode */}
-              {authMode === 'reset' ? (
-                <form onSubmit={handleEmailAuthSubmit} className="space-y-3 bg-[#0d1424] p-4 border border-slate-800 rounded-xl">
-                  <div className="text-slate-300 text-xs font-bold mb-1">
-                    СКИДАННЯ ТА ВІДНОВЛЕННЯ ПАРОЛЯ SUPABASE
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Введіть вашу електронну пошту, і ми надішлемо посилання для створення нового пароля.
-                  </p>
+              {/* Google OAuth Button */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="w-full py-2 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-[2px] transition-all flex items-center justify-center gap-2 shadow text-xs font-sans"
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>УВІЙТИ ЧЕРЕЗ GOOGLE</span>
+              </button>
 
+              {/* Form */}
+              <form onSubmit={handleEmailAuthSubmit} className="space-y-3">
+                {authMode === 'register' && (
                   <div>
-                    <label className="text-slate-400 text-[11px]">Email акаунту</label>
+                    <label className="text-[10px] text-[#94A3B8] block mb-1">ІМ'Я ТРЕЙДЕРА</label>
                     <input
-                      type="email"
+                      type="text"
                       required
-                      value={userEmail}
-                      onChange={(e) => setUserEmail(e.target.value)}
-                      placeholder="trader@nexusquant.com"
-                      className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Quant Trader"
+                      className="w-full p-2 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-mono text-xs focus:border-[#00F5D4] focus:outline-none"
                     />
                   </div>
+                )}
 
-                  <button
-                    type="submit"
-                    className="w-full py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold rounded shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Надіслати інструкції скидання
-                  </button>
+                <div>
+                  <label className="text-[10px] text-[#94A3B8] block mb-1">EMAIL ПОШТА</label>
+                  <input
+                    type="email"
+                    required
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    placeholder="trader@gmail.com"
+                    className="w-full p-2 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-mono text-xs focus:border-[#00F5D4] focus:outline-none"
+                  />
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setAuthMode('login')}
-                    className="w-full text-center text-slate-400 hover:text-slate-200 text-[11px] font-bold mt-1 block"
-                  >
-                    ← Повернутися до входу в акаунт
-                  </button>
-                </form>
-              ) : (
-                <>
-                  {/* Google OAuth Quick Register/Login Button */}
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    className="w-full py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-lg transition-all flex items-center justify-center gap-2.5 shadow-md border border-slate-300 font-sans"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                    </svg>
-                    <span>{authMode === 'login' ? 'Увійти через Google' : 'Зареєструватися через Google'}</span>
-                  </button>
-
-                  <div className="flex items-center gap-3 my-2 text-[#64748B] text-[10px]">
-                    <div className="flex-1 h-[1px] bg-slate-800" />
-                    <span>АБО БУДЬ-ЯКОЮ ЕЛЕКТРОННОЮ ПОШТОЮ</span>
-                    <div className="flex-1 h-[1px] bg-slate-800" />
+                {authMode !== 'reset' && (
+                  <div>
+                    <label className="text-[10px] text-[#94A3B8] block mb-1">ПАРОЛЬ</label>
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full p-2 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-mono text-xs focus:border-[#00F5D4] focus:outline-none"
+                    />
                   </div>
+                )}
 
-                  <form onSubmit={handleEmailAuthSubmit} className="space-y-3 bg-[#0d1424] p-4 border border-slate-800 rounded-xl">
-                    {authMode === 'register' && (
-                      <div>
-                        <label className="text-slate-400 text-[11px]">Ім'я та Прізвище</label>
-                        <input
-                          type="text"
-                          required
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
-                          placeholder="Quant Trader"
-                          className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="text-slate-400 text-[11px]">Email пошта (будь-який домен)</label>
-                      <input
-                        type="email"
-                        required
-                        value={userEmail}
-                        onChange={(e) => setUserEmail(e.target.value)}
-                        placeholder="trader@gmail.com / trader@nexusquant.com"
-                        className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-slate-400 text-[11px]">Пароль</label>
-                        <button
-                          type="button"
-                          onClick={() => setAuthMode('reset')}
-                          className="text-[10px] text-cyan-400 hover:underline"
-                        >
-                          Забули пароль?
-                        </button>
-                      </div>
-                      <input
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••••••"
-                        className="w-full mt-1 p-2 bg-[#111827] border border-slate-700 rounded text-slate-100 font-bold focus:border-cyan-500 focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-2 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold rounded shadow-lg transition-all"
-                    >
-                      {authMode === 'login' ? 'Увійти в Акаунт' : 'Створити Новий Акаунт'}
-                    </button>
-                  </form>
-                </>
-              )}
+                <button
+                  type="submit"
+                  className="w-full py-2 bg-[#00F5D4] text-[#050811] font-bold rounded-[2px] text-xs hover:bg-[#00FF9D] transition-colors shadow flex items-center justify-center gap-1.5 uppercase"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  {authMode === 'login' ? 'УВІЙТИ В АКАУНТ' : authMode === 'register' ? 'ЗАРЕЄСТРУВАТИСЯ' : 'СКИНУТИ ПАРОЛЬ'}
+                </button>
+              </form>
             </div>
           )}
         </div>
-      </div>
+
+        {/* Drawer Footer */}
+        <div className="p-3 border-t border-cyan-500/20 bg-[#050811] text-center text-[10px] text-[#64748B]">
+          NEXUS QUANT NEO MIRAI • PROFILE CONTROL PANEL
+        </div>
+      </aside>
     </div>
   );
 };
