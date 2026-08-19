@@ -116,7 +116,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
   return (
     <header className="w-full bg-[#050811] border-b border-cyan-500/20 px-3 py-2 flex items-center justify-between gap-2 font-neo-mono select-none neo-hud-bracket shrink-0">
       {/* Left Block Split in 2 Halves */}
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
+      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* Left Half 1: Branding & Micro System Badges */}
         <div className="flex items-center gap-2.5 shrink-0 bg-[#090E1C] px-2.5 py-1 rounded-[2px] border border-cyan-500/20">
           <Link href="/" className="flex items-center gap-2 group shrink-0">
@@ -151,7 +151,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         </div>
 
         {/* Left Half 2: Search Input & Watchlist Pills */}
-        <div className="flex items-center gap-2 shrink-0 bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20">
+        <div className="flex items-center gap-2 shrink-0 bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <form onSubmit={handleSearchSubmit} className="relative shrink-0">
             <input
               type="text"

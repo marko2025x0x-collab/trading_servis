@@ -303,7 +303,18 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
             </div>
 
             <form onSubmit={handleSaveAccount} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-400">TradeLocker Account ID</label>
+                  <input
+                    type="text"
+                    value={account.accountId}
+                    onChange={(e) => setAccount({ ...account, accountId: e.target.value })}
+                    className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none font-mono"
+                    placeholder="1787179051833048700"
+                  />
+                </div>
+
                 <div>
                   <label className="text-[10px] text-slate-400">Сервер TradeLocker</label>
                   <input

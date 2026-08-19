@@ -1,9 +1,9 @@
 import { TradeLockerAccountInfo, TradeLockerPosition } from '@/types/tradelocker';
 
 export const INITIAL_DEMO_ACCOUNT: TradeLockerAccountInfo = {
-  accountId: 'TL-DEMO-984210',
-  accountName: 'Demo Pro Trader',
-  server: 'TradeLocker-Sandbox-V2',
+  accountId: '1787179051833048700',
+  accountName: 'TradeLocker Real/Demo Account',
+  server: 'TradeLocker-Demo-Server-01',
   balance: 50000.00,
   equity: 51240.50,
   freeMargin: 48950.00,
