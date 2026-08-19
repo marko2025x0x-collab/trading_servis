@@ -2,23 +2,25 @@
 
 import React, { useState, useEffect } from 'react';
 import { TradeLockerAccountInfo, TradeLockerPosition } from '@/types/tradelocker';
-import { INITIAL_DEMO_ACCOUNT } from '@/lib/tradelocker/demoStore';
 import { Language, getTranslation } from '@/lib/i18n';
 import {
   Wallet,
-  X,
-  Server,
-  Layers,
-  CheckCircle2,
-  Share2,
-  Lock,
   ShieldCheck,
   Zap,
-  Key,
-  Trash2,
+  Lock,
   RefreshCw,
-  AlertTriangle,
+  X,
+  Plus,
+  Check,
+  AlertCircle,
+  ExternalLink,
+  Layers,
+  Key,
+  Server,
+  Mail,
+  CheckCircle2,
 } from 'lucide-react';
+import { INITIAL_DEMO_ACCOUNT } from '@/lib/tradelocker/demoStore';
 
 interface TradeLockerDemoModalProps {
   isOpen: boolean;
@@ -29,7 +31,7 @@ interface TradeLockerDemoModalProps {
   onAddPosition: (pos: TradeLockerPosition) => void;
 }
 
-const STORAGE_ACCOUNT_KEY = 'nexus_quant_tl_demo_account';
+const STORAGE_ACCOUNT_KEY = 'nexus_quant_tradelocker_account';
 
 export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
   isOpen,
@@ -45,18 +47,25 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
   // Connection & Vault Form State
   const [environment, setEnvironment] = useState<'DEMO' | 'LIVE'>('DEMO');
   const [server, setServer] = useState('TradeLocker-Demo-Server-01');
-  const [email, setEmail] = useState('trader@example.com');
+  const [email, setEmail] = useState('trader@nexusquant.com');
   const [password, setPassword] = useState('••••••••••••');
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [vaultStatus, setVaultStatus] = useState<string | null>('AES-256-GCM ENCRYPTED');
+  const [accountIdInput, setAccountIdInput] = useState('1787179051833048700');
 
+  // Interactive Test & Connection States
+  const [isSaving, setIsSaving] = useState(false);
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string>('AES-256-GCM ENCRYPTED & CONNECTED');
+
+  // Load account from LocalStorage if saved
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedAcc = localStorage.getItem(STORAGE_ACCOUNT_KEY);
       if (savedAcc) {
         try {
-          setAccount(JSON.parse(savedAcc));
+          const parsed = JSON.parse(savedAcc);
+          setAccount(parsed);
+          if (parsed.accountId) setAccountIdInput(parsed.accountId);
+          if (parsed.server) setServer(parsed.server);
         } catch {
           setAccount(INITIAL_DEMO_ACCOUNT);
         }
@@ -66,6 +75,42 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
 
   if (!isOpen) return null;
 
+  const handleTestConnection = async () => {
+    setTestStatus('testing');
+    try {
+      const res = await fetch('/api/tradelocker/vault', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          server,
+          email,
+          password,
+          environment,
+          accountId: accountIdInput,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setTestStatus('success');
+        setStatusMessage(data.message || 'Зєднання з сервером TradeLocker успішно встановлено!');
+        setAccount((prev) => ({
+          ...prev,
+          accountId: accountIdInput,
+          server,
+          connected: true,
+          balance: data.vaultInfo?.balance || prev.balance,
+        }));
+      } else {
+        setTestStatus('error');
+        setStatusMessage(data.message || 'Помилка підключення до TradeLocker');
+      }
+    } catch {
+      setTestStatus('error');
+      setStatusMessage('Мережева помилка під час зв’язку з сервером TradeLocker.');
+    }
+  };
+
   const handleSaveAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -74,302 +119,242 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
       const res = await fetch('/api/tradelocker/vault', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ server, email, password, environment }),
+        body: JSON.stringify({
+          server,
+          email,
+          password,
+          environment,
+          accountId: accountIdInput,
+        }),
       });
 
       const data = await res.json();
+      const updatedAccount: TradeLockerAccountInfo = {
+        ...account,
+        accountId: accountIdInput,
+        server,
+        connected: true,
+        isDemo: environment === 'DEMO',
+        balance: data.vaultInfo?.balance || account.balance,
+      };
 
-      if (data.success) {
-        const updated: TradeLockerAccountInfo = {
-          ...account,
-          server,
-          accountName: environment === 'LIVE' ? 'Real Live Account' : 'Demo Account',
-          isDemo: environment === 'DEMO',
-          connected: true,
-        };
-        setAccount(updated);
-        setVaultStatus(data.vaultInfo.encryptedStatus);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(STORAGE_ACCOUNT_KEY, JSON.stringify(updated));
-        }
+      setAccount(updatedAccount);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_ACCOUNT_KEY, JSON.stringify(updatedAccount));
       }
-    } catch (err) {
-      console.error(err);
+
+      setTestStatus('success');
+      setStatusMessage(`Акаунт ${accountIdInput} успішно підключено та зашифровано!`);
+    } catch {
+      setTestStatus('error');
+      setStatusMessage('Помилка збереження даних TradeLocker Vault');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handlePurgeGDPRData = async () => {
-    if (confirm('GDPR: Ви впевнені, що хочете видалити всі збережені зашифровані ключі TradeLocker?')) {
-      await fetch('/api/tradelocker/vault', { method: 'DELETE' });
-      localStorage.removeItem(STORAGE_ACCOUNT_KEY);
-      setVaultStatus(null);
-      alert('Всі зашифровані дані TradeLocker повністю видалено згідно GDPR.');
-    }
-  };
-
-  const handleCopyDemoLink = () => {
-    const link = `${window.location.origin}/pro-dashboard?demo=true&tradelocker=demo_active`;
-    navigator.clipboard.writeText(link);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const totalUnrealizedPnl = positions.reduce((sum, p) => sum + p.unrealizedPnl, 0);
+  const totalPnl = positions.reduce((sum, p) => sum + p.unrealizedPnl, 0);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-[#090d16] border border-slate-700/80 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-[#050811]/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-neo-mono select-none">
+      <div className="bg-[#090E1C] border border-[#00F5D4]/40 rounded-[3px] w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl neo-hud-bracket">
         {/* Header */}
-        <div className="p-4 bg-[#0d1424] border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 bg-[#050811] border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-              <Wallet className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-[2px] bg-[#00FF9D]/10 border border-[#00FF9D]/40 flex items-center justify-center text-[#00FF9D]">
+              <Wallet className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-extrabold text-slate-100 text-sm tracking-wider flex items-center gap-2 font-mono">
-                TRADELOCKER SECURE VAULT
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] ${
-                    environment === 'LIVE'
-                      ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  }`}
-                >
-                  {environment === 'LIVE' ? 'LIVE REAL TRADING' : 'DEMO SANDBOX'}
+              <h2 className="font-extrabold text-[#E2E8F0] text-sm tracking-wider flex items-center gap-2 font-neo-display">
+                <span>ПІДКТЮЧЕННЯ ТА КЕРУВАННЯ TRADELOCKER</span>
+                <span className="neo-hud-badge">
+                  [{environment} ACCOUNT]
                 </span>
               </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
-                Шифрування за стандартом AES-256-GCM та повна відповідність GDPR
+              <p className="text-[11px] text-[#94A3B8]">
+                Автоматична маршрутизація угод через REST API з AES-256-GCM шифруванням
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopyDemoLink}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 rounded text-xs font-mono font-bold transition-all"
-            >
-              {copiedLink ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-              {copiedLink ? 'Посилання скопійовано!' : 'Поділитись демо-доступом'}
-            </button>
+          <button
+            onClick={onClose}
+            className="text-[#64748B] hover:text-[#E2E8F0] p-1.5 rounded hover:bg-[#0F172A] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        {/* Live Account Metrics Cards */}
+        <div className="p-4 bg-[#050811]/60 border-b border-cyan-500/20 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-2.5 bg-[#090E1C] border border-cyan-500/20 rounded-[2px]">
+            <div className="text-[10px] text-[#94A3B8] uppercase">ACCOUNT ID</div>
+            <div className="text-xs font-extrabold text-[#00F5D4] font-mono truncate mt-0.5">
+              {account.accountId}
+            </div>
+          </div>
+
+          <div className="p-2.5 bg-[#090E1C] border border-cyan-500/20 rounded-[2px]">
+            <div className="text-[10px] text-[#94A3B8] uppercase">БАЛАНС ($)</div>
+            <div className="text-sm font-extrabold text-[#00FF9D] font-mono mt-0.5">
+              ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+          </div>
+
+          <div className="p-2.5 bg-[#090E1C] border border-cyan-500/20 rounded-[2px]">
+            <div className="text-[10px] text-[#94A3B8] uppercase">EQUITY ($)</div>
+            <div className="text-sm font-extrabold text-[#E2E8F0] font-mono mt-0.5">
+              ${(account.balance + totalPnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </div>
+          </div>
+
+          <div className="p-2.5 bg-[#090E1C] border border-cyan-500/20 rounded-[2px]">
+            <div className="text-[10px] text-[#94A3B8] uppercase">СТАТУС З'ЄДНАННЯ</div>
+            <div className="text-xs font-extrabold text-[#00FF9D] flex items-center gap-1 mt-1">
+              <span className="w-2 h-2 rounded-full bg-[#00FF9D] animate-pulse" />
+              CONNECTED
+            </div>
           </div>
         </div>
 
-        {/* Demo/Live Account Stats Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3.5 bg-[#0b101d] border-b border-slate-800 text-center font-mono-num text-xs">
-          <div className="p-2.5 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-slate-400 uppercase">Баланс рахунку</div>
-            <div className="font-extrabold text-slate-100 text-sm">${account.balance.toLocaleString('en-US')} USD</div>
-          </div>
-
-          <div className="p-2.5 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-sky-400 uppercase">Equity (Засоби)</div>
-            <div className="font-extrabold text-sky-300 text-sm">
-              ${(account.balance + totalUnrealizedPnl).toLocaleString('en-US')}
-            </div>
-          </div>
-
-          <div className="p-2.5 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-emerald-400 uppercase">Плаваючий PnL</div>
-            <div
-              className={`font-extrabold text-sm ${
-                totalUnrealizedPnl >= 0 ? 'text-emerald-400' : 'text-rose-400'
-              }`}
-            >
-              {totalUnrealizedPnl >= 0 ? `+$${totalUnrealizedPnl}` : `-$${Math.abs(totalUnrealizedPnl)}`}
-            </div>
-          </div>
-
-          <div className="p-2.5 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-purple-400 uppercase">Режим акаунту</div>
-            <div className="font-extrabold text-purple-300 text-sm">{account.isDemo ? 'DEMO' : 'REAL LIVE'}</div>
-          </div>
-        </div>
-
-        {/* Modal Main Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          {/* Active TradeLocker Positions Table */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between font-mono">
-              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4 text-sky-400" />
-                Відкриті позиції ({positions.length})
+        {/* Credentials Form & Live Test */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+          <div className="p-4 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-3">
+            <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
+              <h3 className="font-extrabold text-xs text-[#E2E8F0] flex items-center gap-2 uppercase font-neo-display">
+                <Lock className="w-4 h-4 text-[#00F5D4]" />
+                НАЛАШТУВАННЯ АКАУНТУ TRADELOCKER
               </h3>
-              <span className="text-[11px] text-slate-400">TradeLocker Direct API Bridge</span>
-            </div>
-
-            {positions.length === 0 ? (
-              <div className="p-6 text-center text-slate-500 font-mono text-xs border border-slate-800 rounded-lg">
-                Немає відкритих позицій на рахунку.
-              </div>
-            ) : (
-              <div className="border border-slate-800 rounded-lg overflow-hidden font-mono-num text-xs bg-[#0b101d]">
-                <div className="grid grid-cols-12 p-2.5 bg-[#0d1424] border-b border-slate-800 text-[10px] text-slate-400 uppercase font-mono font-bold">
-                  <div className="col-span-2">СИМВОЛ</div>
-                  <div className="col-span-2">ТИП / ОБСЯГ</div>
-                  <div className="col-span-2">ВХІД</div>
-                  <div className="col-span-2">ПОТОЧНА ЦІНА</div>
-                  <div className="col-span-2 text-right">PnL ($)</div>
-                  <div className="col-span-2 text-right">ДІЯ</div>
-                </div>
-
-                <div className="divide-y divide-slate-800/60">
-                  {positions.map((pos) => {
-                    const isWin = pos.unrealizedPnl >= 0;
-                    return (
-                      <div key={pos.id} className="grid grid-cols-12 p-3 items-center hover:bg-[#11192e] transition-colors">
-                        <div className="col-span-2 font-mono font-extrabold text-slate-100 text-xs">
-                          {pos.symbol}
-                        </div>
-
-                        <div className="col-span-2 flex items-center gap-1">
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                              pos.type === 'BUY'
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                            }`}
-                          >
-                            {pos.type}
-                          </span>
-                          <span className="text-slate-400 font-mono">{pos.volume} lot</span>
-                        </div>
-
-                        <div className="col-span-2 text-slate-300 font-mono">{pos.openPrice}</div>
-                        <div className="col-span-2 text-sky-300 font-mono font-bold">{pos.currentPrice}</div>
-
-                        <div className="col-span-2 text-right font-extrabold text-xs font-mono">
-                          <span className={isWin ? 'text-emerald-400' : 'text-rose-400'}>
-                            {isWin ? `+$${pos.unrealizedPnl}` : `-$${Math.abs(pos.unrealizedPnl)}`}
-                          </span>
-                        </div>
-
-                        <div className="col-span-2 text-right">
-                          <button
-                            onClick={() => onClosePosition(pos.id)}
-                            className="px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 rounded text-[10px] font-mono font-bold transition-all"
-                          >
-                            Закрити
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Encrypted Credentials Vault Form */}
-          <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl space-y-4 font-mono text-xs">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-400" />
-                Зашифроване Сховище Ключів TradeLocker (AES-256-GCM)
-              </h3>
-
-              {/* Environment Switcher Pills */}
-              <div className="flex items-center gap-1 bg-[#090d16] p-1 rounded-lg border border-slate-800">
+              <div className="flex items-center gap-1 bg-[#090E1C] p-0.5 rounded border border-cyan-500/20 text-xs">
                 <button
+                  type="button"
                   onClick={() => setEnvironment('DEMO')}
-                  className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                  className={`px-2.5 py-0.5 rounded-[2px] font-bold text-[10px] transition-all ${
                     environment === 'DEMO'
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/40'
+                      : 'text-[#94A3B8]'
                   }`}
                 >
                   DEMO
                 </button>
                 <button
+                  type="button"
                   onClick={() => setEnvironment('LIVE')}
-                  className={`px-3 py-1 rounded text-xs font-bold transition-all ${
+                  className={`px-2.5 py-0.5 rounded-[2px] font-bold text-[10px] transition-all ${
                     environment === 'LIVE'
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-[#FF2A6D]/20 text-[#FF2A6D] border border-[#FF2A6D]/40'
+                      : 'text-[#94A3B8]'
                   }`}
                 >
-                  REAL LIVE
+                  LIVE REAL
                 </button>
               </div>
             </div>
 
-            <form onSubmit={handleSaveAccount} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <form onSubmit={handleSaveAccount} className="space-y-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] text-slate-400">TradeLocker Account ID</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
+                    ACCOUNT ID (НОМЕР РАХУНКУ):
+                  </label>
                   <input
                     type="text"
-                    value={account.accountId}
-                    onChange={(e) => setAccount({ ...account, accountId: e.target.value })}
-                    className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none font-mono"
+                    required
+                    value={accountIdInput}
+                    onChange={(e) => setAccountIdInput(e.target.value)}
                     placeholder="1787179051833048700"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#00F5D4] font-extrabold focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-400">Сервер TradeLocker</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
+                    СЕРВЕР TRADELOCKER:
+                  </label>
                   <input
                     type="text"
+                    required
                     value={server}
                     onChange={(e) => setServer(e.target.value)}
-                    className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none"
+                    placeholder="TradeLocker-Demo-Server-01"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-400">Email TradeLocker</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
+                    EMAIL АКАУНТУ:
+                  </label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] text-slate-400">Пароль / API Key</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
+                    ПАРОЛЬ / API KEY:
+                  </label>
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none"
+                    className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="p-3 bg-[#090d16] border border-slate-800 rounded flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[11px] text-emerald-400">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>GDPR Compliant: Ключі зашифровані в AES-256. Адміністратори не мають доступу.</span>
+              {/* Status Feedback Box */}
+              {statusMessage && (
+                <div
+                  className={`p-2.5 rounded-[2px] border text-xs flex items-center justify-between ${
+                    testStatus === 'error'
+                      ? 'bg-[#FF2A6D]/15 border-[#FF2A6D]/40 text-[#FF2A6D]'
+                      : 'bg-[#00FF9D]/15 border-[#00FF9D]/40 text-[#00FF9D]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 shrink-0" />
+                    <span>{statusMessage}</span>
+                  </div>
+                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 bg-[#050811] rounded border border-current">
+                    AES-256
+                  </span>
                 </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-cyan-500/20">
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={testStatus === 'testing'}
+                  className="px-3.5 py-1.5 bg-[#090E1C] hover:bg-[#0F172A] text-[#00F5D4] border border-[#00F5D4]/40 rounded-[2px] text-xs font-bold transition-all flex items-center gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${testStatus === 'testing' ? 'animate-spin' : ''}`} />
+                  ПЕРЕВІРИТИ ЗЄДНАННЯ
+                </button>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handlePurgeGDPRData}
-                    className="px-3 py-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 rounded font-bold transition-all flex items-center gap-1"
+                    onClick={onClose}
+                    className="px-3.5 py-1.5 text-xs text-[#94A3B8] hover:text-[#E2E8F0]"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Видалити ключі (GDPR)
+                    СКАСУВАТИ
                   </button>
 
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-4 py-1.5 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded shadow-lg transition-all"
+                    className="px-5 py-1.5 bg-[#00F5D4] text-[#050811] font-bold rounded-[2px] text-xs hover:bg-[#00FF9D] transition-colors flex items-center gap-1.5 shadow-lg shadow-[#00F5D4]/20"
                   >
-                    Зашифрувати та зберегти
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isSaving ? 'ЗБЕРЕЖЕННЯ...' : 'ЗБЕРЕГТИ ТА ПІДКЛЮЧИТИ'}
                   </button>
                 </div>
               </div>
