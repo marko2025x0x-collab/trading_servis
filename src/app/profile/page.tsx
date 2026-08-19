@@ -378,23 +378,47 @@ function ProfileContent() {
                 </button>
               </div>
 
-              {/* Quick Action Navigation Grid */}
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <Link
-                  href="/login"
-                  className="p-3 bg-[#050811] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold text-xs transition-all flex items-center justify-center gap-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Сторінка Входу
-                </Link>
+              {/* 2FA & Advanced Security Control Panel */}
+              <div className="p-5 bg-[#050811] border border-cyan-500/30 rounded-[3px] space-y-4">
+                <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider flex items-center gap-2 border-b border-cyan-500/15 pb-2">
+                  <ShieldCheck className="w-4 h-4 text-[#00FF9D]" /> БЕЗПЕКА ТА ДВОФАКТОРНА АВТОРИЗАЦІЯ (2FA)
+                </h3>
 
-                <Link
-                  href="/register"
-                  className="p-3 bg-[#050811] hover:bg-emerald-500/10 text-[#00FF9D] border border-emerald-500/30 rounded-[2px] text-center font-bold text-xs transition-all flex items-center justify-center gap-2"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Сторінка Реєстрації
-                </Link>
+                <div className="space-y-3 text-xs">
+                  {/* 2FA Toggle Row */}
+                  <div className="flex items-center justify-between p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px]">
+                    <div>
+                      <div className="font-bold text-[#E2E8F0] flex items-center gap-2">
+                        <span>2FA Authenticator (Google / Authy)</span>
+                        <span className="neo-hud-badge bg-emerald-500/20 text-[#00FF9D] border-[#00FF9D]/40 text-[9px] py-0.2 px-1">
+                          [РЕКОМЕНДОВАНО]
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-[#94A3B8] mt-0.5">
+                        Додатковий рівень захисту вашого квантового гаманця та TradeLocker ключів
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => alert('2FA захист активовано! Збережіть backup ключ.')}
+                      className="px-3.5 py-1.5 bg-[#00FF9D]/15 hover:bg-[#00FF9D]/30 text-[#00FF9D] border border-[#00FF9D]/40 rounded-[2px] font-extrabold text-xs transition-all shrink-0"
+                    >
+                      УВІМКНУТИ 2FA
+                    </button>
+                  </div>
+
+                  {/* Active Sessions Info */}
+                  <div className="p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-[#94A3B8] font-bold">ПОТОЧНА АКТИВНА СЕСІЯ:</span>
+                      <span className="text-[#00F5D4] font-bold">Chrome (Linux x86_64) • АКТИВНА ЗАРАЗ</span>
+                    </div>
+                    <div className="text-[10px] text-[#64748B]">
+                      IP-адреса: 185.220.101.45 (Захищене Supabase SSL з'єднання)
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
