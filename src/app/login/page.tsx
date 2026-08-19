@@ -18,7 +18,7 @@ export default function LoginPage() {
     return url && !url.includes('your-supabase-project') && !url.includes('mock-trading-analytics');
   };
 
-  // Handle Google OAuth Sign-In
+  // Handle Google OAuth Sign-In with pre-flight check
   const handleGoogleSignIn = async () => {
     if (!isSupabaseConfigured()) {
       setStatusFeedback({
@@ -31,20 +31,35 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       const redirectUrl = `${window.location.origin}/auth/callback`;
-      const { error } = await supabase.auth.signInWithOAuth({
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectUrl },
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
       });
 
       if (error) {
-        if (error.message.toLowerCase().includes('not enabled') || error.message.toLowerCase().includes('provider')) {
-          setStatusFeedback({
-            type: 'warning',
-            message: 'Провайдер Google ще не увімкнено у вашому Supabase (Authentication -> Providers -> Google). Увімкніть його в 1 клік або використайте Швидкий Демо Вхід!',
-          });
-        } else {
-          setStatusFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
+        setStatusFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
+        return;
+      }
+
+      if (data?.url) {
+        // Pre-flight check to verify if Google provider is enabled in Supabase
+        const checkRes = await fetch(data.url).catch(() => null);
+        if (checkRes && checkRes.status === 400) {
+          const body = await checkRes.json().catch(() => ({}));
+          if (body.msg?.includes('provider is not enabled') || body.error_code === 'validation_failed') {
+            setStatusFeedback({
+              type: 'warning',
+              message: '⚠️ Провайдер Google ще не увімкнено у вашому Supabase Dashboard (Authentication ➔ Providers ➔ Google ➔ Enable). Увімкніть його в 1 клік або використайте Швидкий Демо Вхід нижче!',
+            });
+            return;
+          }
         }
+        // If enabled or ok, proceed with full OAuth redirect
+        window.location.href = data.url;
       }
     } catch {
       handleDemoSignIn();

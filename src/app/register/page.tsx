@@ -18,12 +18,12 @@ export default function RegisterPage() {
     return url && !url.includes('your-supabase-project') && !url.includes('mock-trading-analytics');
   };
 
-  // Handle Google OAuth Registration
+  // Handle Google OAuth Registration with pre-flight check
   const handleGoogleSignUp = async () => {
     if (!isSupabaseConfigured()) {
       setStatusFeedback({
         type: 'warning',
-        message: 'Для реєстрації через Google вкажіть ваші NEXT_PUBLIC_SUPABASE_URL та NEXT_PUBLIC_SUPABASE_ANON_KEY у Vercel. Скористайтеся кнопкою ДЕМО РЕЄСТРАЦІЯ нижче!',
+        message: 'Для реєстрації через Google вкажіть ваші NEXT_PUBLIC_SUPABASE_URL у Vercel або скористайтеся Демо Реєстрацією!',
       });
       return;
     }
@@ -31,19 +31,38 @@ export default function RegisterPage() {
     try {
       const supabase = createClient();
       const redirectUrl = `${window.location.origin}/auth/callback`;
-      const { error } = await supabase.auth.signInWithOAuth({
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: redirectUrl },
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
       });
 
       if (error) {
         setStatusFeedback({ type: 'error', message: `Помилка Google Registration: ${error.message}` });
+        return;
+      }
+
+      if (data?.url) {
+        // Pre-flight check to verify if Google provider is enabled in Supabase
+        const checkRes = await fetch(data.url).catch(() => null);
+        if (checkRes && checkRes.status === 400) {
+          const body = await checkRes.json().catch(() => ({}));
+          if (body.msg?.includes('provider is not enabled') || body.error_code === 'validation_failed') {
+            setStatusFeedback({
+              type: 'warning',
+              message: '⚠️ Провайдер Google ще не увімкнено у вашому Supabase Dashboard (Authentication ➔ Providers ➔ Google ➔ Enable). Увімкніть його в 1 клік або використайте Швидку Демо Реєстрацію нижче!',
+            });
+            return;
+          }
+        }
+        // If enabled or ok, proceed with full OAuth redirect
+        window.location.href = data.url;
       }
     } catch {
-      setStatusFeedback({
-        type: 'error',
-        message: 'Не вдалося з’єднатися з сервером Supabase Auth.',
-      });
+      handleDemoSignUp();
     }
   };
 
