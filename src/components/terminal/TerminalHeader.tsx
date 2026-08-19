@@ -150,68 +150,55 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
           </div>
         </div>
 
-        {/* Left Half 2: Search Input & Watchlist Pills */}
-        <div className="flex items-center gap-2 min-w-0 max-w-[520px] bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20">
-          <form onSubmit={handleSearchSubmit} className="relative shrink-0">
-            <input
-              type="text"
-              placeholder={lang === 'uk' ? 'Пошук пари...' : 'Search symbol...'}
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-24 sm:w-32 pl-6 pr-2 py-0.5 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] placeholder:text-[#64748B] focus:outline-none focus:border-[#00F5D4] transition-all"
-            />
-            <Search className="w-3 h-3 text-[#64748B] absolute left-1.5 top-1.5" />
-          </form>
-
-          <div className="flex items-center gap-1 min-w-0 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
-            {watchlist.map((sym) => {
-              const isSelected = selectedSymbol === sym;
-              return (
-                <div
-                  key={sym}
-                  onClick={() => onSymbolSelect(sym)}
-                  className={`group relative flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-neo-mono font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                    isSelected
-                      ? 'bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 font-bold shadow-[0_0_8px_rgba(0,245,212,0.2)]'
-                      : 'text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#0F172A]'
-                  }`}
-                >
-                  <span>{sym}</span>
-
-                  <button
-                    onClick={(e) => handleRemovePair(sym, e)}
-                    className="opacity-0 group-hover:opacity-100 text-[#64748B] hover:text-[#FF2A6D] p-0.5 rounded transition-all ml-0.5"
-                    title={`Видалити ${sym}`}
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              );
-            })}
-
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="p-1 text-[#64748B] hover:text-[#00F5D4] transition-all rounded hover:bg-[#050811] shrink-0"
-              title="Додати валютну пару"
+        {/* Left Half 2: Currency Pair Chips List */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {watchlist.map((pair) => (
+            <div
+              key={pair}
+              onClick={() => onSymbolSelect(pair)}
+              className={`group flex items-center gap-1.5 px-2 py-1 rounded-[2px] text-xs font-bold font-mono transition-all cursor-pointer border ${
+                selectedSymbol === pair
+                  ? 'bg-cyan-500/20 text-[#00F5D4] border-[#00F5D4] shadow-[0_0_8px_rgba(0,245,212,0.25)]'
+                  : 'bg-[#090E1C] text-[#94A3B8] border-cyan-500/20 hover:text-[#E2E8F0] hover:border-cyan-500/40'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-          </div>
+              <span>{pair}</span>
+              {watchlist.length > 1 && (
+                <button
+                  type="button"
+                  onClick={(e) => handleRemovePair(pair, e)}
+                  className="opacity-0 group-hover:opacity-100 text-[#64748B] hover:text-[#FF2A6D] transition-opacity ml-0.5"
+                  title="Remove pair"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          ))}
+
+          {/* Add Pair Button */}
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center justify-center p-1 bg-[#090E1C] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] transition-colors"
+            title="Add Trading Pair"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
       {/* Add Pair Modal Dialog */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-[#050811]/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#090E1C] border border-[#00F5D4]/40 p-5 rounded-[3px] max-w-sm w-full font-neo-mono shadow-2xl neo-hud-bracket">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-bold text-[#E2E8F0] flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#00F5D4]" />
-                ДОДАТИ СИМВОЛ
+        <div className="fixed inset-0 z-50 bg-[#050811]/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#090E1C] border border-[#00F5D4]/40 rounded-[3px] p-5 w-full max-w-sm space-y-4 neo-hud-bracket shadow-2xl">
+            <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
+              <h3 className="font-extrabold text-xs text-[#E2E8F0] uppercase tracking-wider">
+                + Додати Торгову Пару
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-[#64748B] hover:text-[#E2E8F0] p-1"
+                className="text-[#94A3B8] hover:text-[#00F5D4]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -219,28 +206,31 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
 
             <form onSubmit={handleAddPairSubmit} className="space-y-3">
               <div>
-                <label className="text-[10px] text-[#94A3B8] block mb-1">СИМВОЛ (НАПР. USD/CAD, SOL/USDT):</label>
+                <label className="text-[10px] text-[#94A3B8] block mb-1">
+                  ВВЕДІТЬ ТІКЕР (НАПР. EUR/USD, ETH/USDT, AAPL):
+                </label>
                 <input
                   type="text"
-                  autoFocus
-                  placeholder="EUR/USD"
+                  required
                   value={newPairInput}
                   onChange={(e) => setNewPairInput(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-[#050811] border border-cyan-500/30 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] focus:outline-none focus:border-[#00F5D4]"
+                  placeholder="XAU/USD"
+                  className="w-full p-2 bg-[#050811] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#E2E8F0] uppercase focus:border-[#00F5D4] focus:outline-none"
+                  autoFocus
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1 text-xs text-[#94A3B8] hover:text-[#E2E8F0]"
+                  className="flex-1 py-1.5 bg-[#050811] text-[#94A3B8] hover:text-[#E2E8F0] rounded-[2px] text-xs font-bold border border-slate-800"
                 >
                   СКАСУВАТИ
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1 bg-[#00F5D4] text-[#050811] font-bold rounded-[2px] text-xs hover:bg-[#00FF9D] transition-colors"
+                  className="flex-1 py-1.5 bg-[#00F5D4] text-[#050811] rounded-[2px] text-xs font-extrabold hover:bg-[#00FF9D] shadow"
                 >
                   ДОДАТИ
                 </button>
@@ -250,15 +240,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         </div>
       )}
 
-      {/* Fundamental News Modal */}
-      <FundamentalNewsModal
-        isOpen={showNewsModal}
-        onClose={() => setShowNewsModal(false)}
-        symbol={selectedSymbol}
-        lang={lang}
-      />
-
-      {/* User Profile Modal */}
+      {/* Profile Modal Drawer Component */}
       <UserProfileModal
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
@@ -267,16 +249,36 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         onOpenTradeLocker={onOpenTradeLockerDemo}
       />
 
-      {/* Right: Feature Control Buttons & User Profile */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      {/* Fundamental News Modal Component */}
+      <FundamentalNewsModal
+        isOpen={showNewsModal}
+        onClose={() => setShowNewsModal(false)}
+        symbol={selectedSymbol}
+        lang={lang}
+      />
+
+      {/* Right Block Controls */}
+      <div className="flex items-center gap-2 shrink-0">
+        {/* Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="relative hidden md:block">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Шукати pair..."
+            className="w-32 lg:w-40 bg-[#090E1C] border border-cyan-500/20 text-[#E2E8F0] text-xs px-2.5 py-1 pl-7 rounded-[2px] focus:outline-none focus:border-[#00F5D4] transition-colors placeholder:text-[#64748B]"
+          />
+          <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2 top-1.5 pointer-events-none" />
+        </form>
+
+        {/* Action Buttons */}
         <button
           onClick={() => setShowNewsModal(true)}
-          className="px-2.5 py-1 bg-[#090E1C] hover:bg-[#0F172A] text-[#FFB800] border border-[#FFB800]/40 rounded-[2px] text-xs font-neo-mono font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+          className="px-2.5 py-1 bg-[#090E1C] hover:bg-[#0F172A] text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-xs font-neo-mono font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+          title="Новини Ринку"
         >
-          <Newspaper className="w-3.5 h-3.5 text-[#FFB800]" />
-          <span className="hidden sm:inline">НОВИНИ ({selectedSymbol})</span>
-          <span className="sm:hidden">НОВИНИ</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FFB800] animate-ping" />
+          <Newspaper className="w-3.5 h-3.5 text-[#00F5D4]" />
+          <span className="hidden lg:inline">НОВИНИ</span>
         </button>
 
         <button
@@ -327,14 +329,15 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
             <span>{lang === 'uk' ? '🇺🇦 UA' : '🇬🇧 EN'}</span>
           </button>
 
-          <button
-            onClick={() => setShowProfileModal(true)}
-            className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-[#0F172A] to-[#050811] hover:border-[#00F5D4]/50 text-[#E2E8F0] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono transition-all group shrink-0"
-            title="Profile"
+          {/* Dedicated Profile Page Link */}
+          <Link
+            href="/profile"
+            className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#0F172A] to-[#050811] hover:border-[#00F5D4] text-[#E2E8F0] border border-cyan-500/30 rounded-[2px] text-xs font-neo-mono transition-all group shrink-0"
+            title="Сторінка Профілю"
           >
             <User className="w-3.5 h-3.5 text-[#00F5D4]" />
-            <span className="hidden md:inline text-xs font-bold">Акаунт</span>
-          </button>
+            <span className="hidden md:inline text-xs font-bold text-[#00F5D4]">Профіль</span>
+          </Link>
         </div>
       </div>
     </header>
