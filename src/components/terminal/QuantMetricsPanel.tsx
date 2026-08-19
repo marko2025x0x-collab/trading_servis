@@ -18,25 +18,25 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
   const zPercentage = (zAbs / 3) * 100;
 
   return (
-    <div className="w-full neo-panel rounded-[3px] p-3.5 space-y-3 shadow-xl neo-hud-bracket font-neo-mono">
+    <div className="w-full neo-panel rounded-[3px] p-3.5 space-y-3 shadow-xl neo-hud-bracket font-neo-mono shrink-0">
       <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
         <div className="flex items-center gap-2">
           <Gauge className="w-4 h-4 text-[#00F5D4]" />
-          <h3 className="font-extrabold text-[#E2E8F0] text-xs tracking-wider uppercase flex items-center gap-2">
+          <h3 className="font-extrabold text-[#E2E8F0] text-xs tracking-wider uppercase flex items-center gap-2 font-neo-display">
             <span>{t.quantMetricsTitle}</span>
             <span className="neo-hud-badge">
               // QUANT RADAR
             </span>
           </h3>
         </div>
-        <span className="text-[10px] text-[#64748B] font-mono-num">{t.calculatedFor} [{symbol}]</span>
+        <span className="text-[10px] text-[#94A3B8] font-mono-num">{t.calculatedFor} [{symbol}]</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Z-Score Card */}
-        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-2 font-mono-num">
+        <div className="p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-2 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#64748B]">{t.zScoreTitle}</span>
+            <span className="text-[#94A3B8] font-medium">{t.zScoreTitle}</span>
             <span
               className={`font-extrabold ${
                 quant.zScore > 1.8
@@ -59,26 +59,26 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
             />
           </div>
 
-          <div className="text-[9px] text-[#64748B] flex items-center justify-between font-mono">
+          <div className="text-[9px] text-[#94A3B8] flex items-center justify-between font-mono">
             <span>{t.oversold}</span>
             <span>{t.overbought}</span>
           </div>
         </div>
 
         {/* ATR Volatility Card */}
-        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
+        <div className="p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#64748B]">{t.atrTitle}</span>
+            <span className="text-[#94A3B8] font-medium">{t.atrTitle}</span>
             <Flame className="w-3.5 h-3.5 text-[#FFB800]" />
           </div>
           <div className="text-lg font-extrabold text-[#E2E8F0]">{quant.atr}</div>
-          <div className="text-[9px] text-[#64748B] font-mono">{t.dynamicStop}</div>
+          <div className="text-[9px] text-[#94A3B8] font-mono">{t.dynamicStop}</div>
         </div>
 
         {/* Momentum Card */}
-        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
+        <div className="p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#64748B]">{t.momentumTitle}</span>
+            <span className="text-[#94A3B8] font-medium">{t.momentumTitle}</span>
             {quant.momentumScore > 50 ? (
               <TrendingUp className="w-3.5 h-3.5 text-[#00FF9D]" />
             ) : (
@@ -86,13 +86,13 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
             )}
           </div>
           <div className="text-lg font-extrabold text-[#00F5D4]">{quant.momentumScore}%</div>
-          <div className="text-[9px] text-[#64748B] font-mono">{t.multiTfRoc}</div>
+          <div className="text-[9px] text-[#94A3B8] font-mono">{t.multiTfRoc}</div>
         </div>
 
         {/* News Filter Card */}
-        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1">
+        <div className="p-3 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#64748B] flex items-center gap-1">
+            <span className="text-[#94A3B8] font-medium flex items-center gap-1">
               <Newspaper className="w-3.5 h-3.5 text-[#00F5D4]" /> {t.fundamentalRadar}
             </span>
             <span className="neo-hud-badge">
@@ -102,7 +102,7 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
           <div className="text-xs text-[#E2E8F0] truncate font-bold">
             {getSymbolFundamentalNews(symbol)[0]?.title || DYNAMIC_SYMBOL_NEWS_FEED[0].title}
           </div>
-          <div className="text-[9px] text-[#FFB800] font-mono-num">
+          <div className="text-[9px] text-[#FFB800] font-mono-num font-bold">
             {getSymbolFundamentalNews(symbol)[0]?.currency || 'USD'} • High Impact
           </div>
         </div>

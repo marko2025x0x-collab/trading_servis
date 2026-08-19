@@ -1,61 +1,85 @@
 import React from 'react';
 import Link from 'next/link';
-import { Activity, ShieldCheck, Zap, ArrowRight, TrendingUp, Cpu, Gauge, Newspaper, Send, Lock } from 'lucide-react';
+import {
+  Activity,
+  ShieldCheck,
+  Zap,
+  ArrowRight,
+  TrendingUp,
+  Cpu,
+  Gauge,
+  Newspaper,
+  Send,
+  Lock,
+  Hexagon,
+} from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen bg-[#050811] text-[#E2E8F0] flex flex-col font-neo-mono selection:bg-[#00F5D4] selection:text-[#050811]">
       {/* Navigation Header */}
-      <nav className="w-full border-b border-slate-800/80 bg-[#0d1424]/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-950/40">
-            <Activity className="w-5 h-5 text-white" />
+      <nav className="w-full border-b border-cyan-500/20 bg-[#090E1C]/90 backdrop-blur-md px-6 py-3.5 flex items-center justify-between sticky top-0 z-40 neo-hud-bracket">
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] via-[#00FF9D] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20">
+              <div className="w-full h-full bg-[#050811] rounded-[2px] flex items-center justify-center">
+                <Hexagon className="w-4 h-4 text-[#00F5D4] fill-[#00F5D4]/20" />
+              </div>
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#00FF9D] rounded-full border-2 border-[#050811] animate-pulse" />
           </div>
-          <span className="font-extrabold text-base tracking-wider text-slate-100">
-            NEXUS <span className="text-sky-400">QUANT</span>
-          </span>
+
+          <div className="font-extrabold text-sm tracking-wider text-[#E2E8F0] font-neo-display flex items-center gap-2">
+            <span>NEXUS</span>
+            <span className="bg-gradient-to-r from-[#00F5D4] via-[#00FF9D] to-violet-400 bg-clip-text text-transparent">
+              QUANT
+            </span>
+            <span className="neo-hud-badge">
+              [SYS::ONLINE]
+            </span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/paywall"
-            className="text-xs text-slate-400 hover:text-slate-200 font-mono transition-colors"
+            className="text-xs text-[#64748B] hover:text-[#00F5D4] font-neo-mono font-bold transition-colors uppercase tracking-wider"
           >
-            PRICING
+            // PAYWALL TIERS
           </Link>
 
           <Link
             href="/pro-dashboard?demo=true"
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-lg text-xs font-mono transition-all shadow-lg shadow-sky-950/50"
+            className="flex items-center gap-2 px-4 py-1.5 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[2px] text-xs font-neo-mono transition-all shadow-[0_0_12px_rgba(0,245,212,0.3)]"
           >
-            <Zap className="w-4 h-4" />
+            <Zap className="w-3.5 h-3.5 fill-current" />
             LAUNCH TERMINAL
           </Link>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-28 max-w-6xl mx-auto flex flex-col items-center text-center space-y-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-mono font-medium">
-          <ShieldCheck className="w-4 h-4 text-sky-400" />
-          SUPABASE & TRADELOCKER INTEGRATED ANALYTICS
+      <section className="relative px-6 py-16 lg:py-24 max-w-5xl mx-auto flex flex-col items-center text-center space-y-6">
+        <div className="neo-hud-badge">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#00F5D4]" />
+          SUPABASE & TRADELOCKER INTEGRATED QUANT SUITE
         </div>
 
-        <h1 className="text-4xl sm:text-7xl font-extrabold text-slate-100 tracking-tight leading-tight max-w-4xl">
+        <h1 className="text-3xl sm:text-6xl font-extrabold text-[#E2E8F0] tracking-tight leading-tight max-w-4xl font-neo-display">
           High-Confluence Algorithmic <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-indigo-400 to-emerald-400">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00F5D4] via-[#00FF9D] to-violet-400 drop-shadow-[0_0_20px_rgba(0,245,212,0.4)]">
             Trading Engine & Webhook Bridge
           </span>
         </h1>
 
-        <p className="text-slate-400 text-base sm:text-xl max-w-2xl font-normal leading-relaxed">
-          Combines Candlestick Patterns, Smart Money Concepts (FVG, BOS), Quantitative Z-Score mean reversion, and Fundamental News filters. Only signals with <span className="text-sky-400 font-mono font-bold">&gt; 80% confluence score</span> are dispatched.
+        <p className="text-[#94A3B8] text-sm sm:text-base max-w-2xl font-normal leading-relaxed">
+          Combines Candlestick Patterns, Smart Money Concepts (FVG, BOS), Quantitative Z-Score mean reversion, and Fundamental News filters. Only signals with <span className="text-[#00F5D4] font-mono-num font-bold">&gt; 80% Confluence Score</span> are dispatched.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
           <Link
             href="/pro-dashboard?demo=true"
-            className="w-full sm:w-auto px-8 py-4 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-sm font-mono transition-all shadow-xl shadow-sky-950/60 flex items-center justify-center gap-2 group"
+            className="w-full sm:w-auto px-8 py-3 bg.00F5D4 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[3px] text-xs font-neo-mono transition-all shadow-[0_0_20px_rgba(0,245,212,0.4)] flex items-center justify-center gap-2 group"
           >
             ENTER PRO TERMINAL
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -63,68 +87,68 @@ export default function LandingPage() {
 
           <Link
             href="/paywall"
-            className="w-full sm:w-auto px-8 py-4 bg-[#0d1424] hover:bg-[#151f36] border border-slate-800 text-slate-300 font-bold rounded-xl text-sm font-mono transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-8 py-3 bg-[#090E1C] hover:bg-[#0F172A] border border-cyan-500/30 text-[#E2E8F0] font-bold rounded-[3px] text-xs font-neo-mono transition-all flex items-center justify-center gap-2"
           >
-            <Lock className="w-4 h-4 text-amber-400" />
+            <Lock className="w-4 h-4 text-[#FFB800]" />
             VIEW PAYWALL TIERS
           </Link>
         </div>
       </section>
 
       {/* Feature Grid */}
-      <section className="px-6 py-16 bg-[#0d1424]/60 border-t border-slate-800/80">
-        <div className="max-w-6xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-100">
+      <section className="px-6 py-14 bg-[#090E1C]/80 border-t border-cyan-500/20 neo-hud-bracket">
+        <div className="max-w-5xl mx-auto space-y-10">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#E2E8F0] font-neo-display">
               The 4-Layer Confluence Matrix
             </h2>
-            <p className="text-slate-400 text-sm max-w-xl mx-auto font-mono">
-              Every signal must satisfy strict mathematical parameters across four distinct analytical dimensions.
+            <p className="text-[#64748B] text-xs max-w-xl mx-auto font-mono">
+              // Mathematical execution validation across four quantitative dimensions
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Feature 1 */}
-            <div className="p-6 bg-[#090d16] border border-slate-800 rounded-xl space-y-3 hover:border-sky-500/40 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                <Cpu className="w-5 h-5" />
+            <div className="p-5 neo-panel rounded-[3px] space-y-3 font-neo-mono">
+              <div className="w-9 h-9 rounded-[2px] bg-[#00F5D4]/10 border border-[#00F5D4]/30 flex items-center justify-center text-[#00F5D4]">
+                <Cpu className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-100">Price Action & Patterns</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Automated detection of Bullish/Bearish Pin Bars, Engulfing candles, and Morning Stars at key market structure pivot points.
+              <h3 className="text-xs font-bold text-[#E2E8F0] uppercase tracking-wider">Price Action & Patterns</h3>
+              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                Automated detection of Bullish/Bearish Pin Bars and Engulfing candles at key structural liquidity points.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="p-6 bg-[#090d16] border border-slate-800 rounded-xl space-y-3 hover:border-purple-500/40 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                <TrendingUp className="w-5 h-5" />
+            <div className="p-5 neo-panel rounded-[3px] space-y-3 font-neo-mono">
+              <div className="w-9 h-9 rounded-[2px] bg-[#00FF9D]/10 border border-[#00FF9D]/30 flex items-center justify-center text-[#00FF9D]">
+                <TrendingUp className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-100">Smart Money Concepts</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <h3 className="text-xs font-bold text-[#E2E8F0] uppercase tracking-wider">Smart Money Concepts</h3>
+              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
                 Identifies Fair Value Gaps (FVG), Break of Structure (BOS), and Liquidity Sweeps to align with institutional order flow.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="p-6 bg-[#090d16] border border-slate-800 rounded-xl space-y-3 hover:border-emerald-500/40 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Gauge className="w-5 h-5" />
+            <div className="p-5 neo-panel rounded-[3px] space-y-3 font-neo-mono">
+              <div className="w-9 h-9 rounded-[2px] bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400">
+                <Gauge className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-100">Quant & Volatility Engine</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Calculates Z-Score for statistical mean reversion, ATR volatility metrics for dynamic SL/TP placement, and momentum ROC.
+              <h3 className="text-xs font-bold text-[#E2E8F0] uppercase tracking-wider">Quant & Volatility</h3>
+              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                Z-Score mean reversion algorithms, ATR dynamic volatility bands, and multi-timeframe ROC metrics.
               </p>
             </div>
 
             {/* Feature 4 */}
-            <div className="p-6 bg-[#090d16] border border-slate-800 rounded-xl space-y-3 hover:border-amber-500/40 transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Newspaper className="w-5 h-5" />
+            <div className="p-5 neo-panel rounded-[3px] space-y-3 font-neo-mono">
+              <div className="w-9 h-9 rounded-[2px] bg-[#FFB800]/10 border border-[#FFB800]/30 flex items-center justify-center text-[#FFB800]">
+                <Newspaper className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold text-slate-100">Fundamental Radar</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Safety buffer blocks signal generation 30 minutes prior to high-impact economic news events like CPI, NFP, and FOMC rate cuts.
+              <h3 className="text-xs font-bold text-[#E2E8F0] uppercase tracking-wider">Fundamental Radar</h3>
+              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
+                Safety buffer blocks signal generation 30 minutes prior to high-impact economic news events (CPI, NFP, ECB rates).
               </p>
             </div>
           </div>
@@ -132,23 +156,23 @@ export default function LandingPage() {
       </section>
 
       {/* TradeLocker Webhook Section */}
-      <section className="px-6 py-16 max-w-6xl mx-auto w-full">
-        <div className="p-8 sm:p-12 bg-gradient-to-r from-[#0d1424] to-[#111a30] border border-slate-800 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl">
-          <div className="space-y-4 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-mono">
-              <Send className="w-3.5 h-3.5" /> TRADELOCKER REST API / WEBHOOK
+      <section className="px-6 py-14 max-w-5xl mx-auto w-full">
+        <div className="p-6 sm:p-10 neo-panel rounded-[3px] flex flex-col lg:flex-row items-center justify-between gap-6 shadow-2xl neo-hud-bracket">
+          <div className="space-y-3 max-w-xl">
+            <div className="neo-hud-badge">
+              <Send className="w-3.5 h-3.5 text-[#00F5D4]" /> TRADELOCKER REST API / WEBHOOK
             </div>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-100">
-              1-Click Trade Execution to TradeLocker
+            <h2 className="text-xl sm:text-3xl font-extrabold text-[#E2E8F0] font-neo-display">
+              1-Click Automated Execution to TradeLocker
             </h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-[#94A3B8] text-xs leading-relaxed">
               When high-confluence signals are detected, send order requests directly to your TradeLocker broker account with pre-calculated Entry, Stop Loss, and Take Profit values.
             </p>
           </div>
 
           <Link
             href="/pro-dashboard?demo=true"
-            className="px-8 py-4 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl text-sm font-mono transition-all shadow-xl shadow-sky-950/60 shrink-0"
+            className="px-6 py-3 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[2px] text-xs font-neo-mono transition-all shadow-[0_0_15px_rgba(0,245,212,0.3)] shrink-0"
           >
             TEST TRADELOCKER EXECUTION
           </Link>
@@ -156,8 +180,8 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full border-t border-slate-800/80 bg-[#090d16] px-6 py-8 text-center text-xs text-slate-500 font-mono">
-        <div>NEXUS QUANT TERMINAL • Powered by Next.js 16, Supabase Realtime & TradeLocker API</div>
+      <footer className="w-full border-t border-cyan-500/20 bg-[#050811] px-6 py-6 text-center text-[11px] text-[#64748B] font-neo-mono">
+        <div>NEXUS QUANT NEO MIRAI TERMINAL • Powered by Next.js 16, Supabase Realtime & TradeLocker API</div>
       </footer>
     </div>
   );
