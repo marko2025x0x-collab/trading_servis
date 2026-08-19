@@ -1,9 +1,10 @@
 -- ====================================================================
--- NEXUS QUANT TERMINAL - SUPABASE DATABASE SCHEMA
+-- NEXUS QUANT TERMINAL - UNIFIED SUPABASE DATABASE SCHEMA
+-- Linked Tables: Profiles, TradeLocker Vault, Positions, Settings, Signals, News
 -- Execute this SQL in your Supabase SQL Editor (https://app.supabase.com)
 -- ====================================================================
 
--- 1. PROFILES TABLE
+-- 1. PROFILES TABLE (Linked directly to Auth Users)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   email TEXT NOT NULL,
@@ -17,7 +18,6 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -26,7 +26,7 @@ CREATE POLICY "Users can view own profile" ON public.profiles
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (auth.uid() = id);
 
--- Trigger to automatically create profile on signup
+-- Trigger to automatically create linked profile on Google OAuth or Email signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -36,7 +36,10 @@ BEGIN
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', 'Quant Trader'),
     NEW.raw_user_meta_data->>'avatar_url'
-  );
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET email = EXCLUDED.email,
+      full_name = EXCLUDED.full_name;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -46,10 +49,10 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 
--- 2. TRADELOCKER ENCRYPTED CREDENTIALS VAULT TABLE
+-- 2. TRADELOCKER ENCRYPTED CREDENTIALS VAULT TABLE (Linked to Profiles)
 CREATE TABLE IF NOT EXISTS public.tradelocker_credentials (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   account_id TEXT NOT NULL,
   server TEXT NOT NULL,
   masked_email TEXT NOT NULL,
@@ -77,10 +80,10 @@ CREATE POLICY "Users can delete own TradeLocker credentials" ON public.tradelock
   FOR DELETE USING (auth.uid() = user_id);
 
 
--- 3. TRADING POSITIONS TABLE
+-- 3. TRADING POSITIONS TABLE (Linked to Profiles)
 CREATE TABLE IF NOT EXISTS public.trading_positions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   symbol TEXT NOT NULL,
   direction TEXT NOT NULL, -- 'BUY' or 'SELL'
   entry_price NUMERIC(14,5) NOT NULL,
@@ -100,7 +103,25 @@ CREATE POLICY "Users can manage own positions" ON public.trading_positions
   FOR ALL USING (auth.uid() = user_id);
 
 
--- 4. QUANTUM SIGNALS TABLE
+-- 4. USER SETTINGS TABLE (Linked to Profiles)
+CREATE TABLE IF NOT EXISTS public.user_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  language TEXT DEFAULT 'uk',
+  default_symbol TEXT DEFAULT 'EUR/USD',
+  notifications_enabled BOOLEAN DEFAULT TRUE,
+  sound_alerts BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own settings" ON public.user_settings
+  FOR ALL USING (auth.uid() = user_id);
+
+
+-- 5. QUANTUM SIGNALS TABLE (Public Terminal Data)
 CREATE TABLE IF NOT EXISTS public.quantum_signals (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   symbol TEXT NOT NULL,
@@ -118,4 +139,22 @@ CREATE TABLE IF NOT EXISTS public.quantum_signals (
 ALTER TABLE public.quantum_signals ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Anyone can view quantum signals" ON public.quantum_signals
+  FOR SELECT USING (true);
+
+
+-- 6. MARKET NEWS TABLE (Real-time Economic News)
+CREATE TABLE IF NOT EXISTS public.market_news (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  impact TEXT NOT NULL, -- 'HIGH', 'MEDIUM', 'LOW'
+  currency TEXT NOT NULL,
+  forecast TEXT,
+  previous TEXT,
+  actual TEXT,
+  published_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.market_news ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view market news" ON public.market_news
   FOR SELECT USING (true);

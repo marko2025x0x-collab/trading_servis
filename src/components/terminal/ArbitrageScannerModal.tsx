@@ -28,10 +28,8 @@ export const ArbitrageScannerModal: React.FC<ArbitrageScannerModalProps> = ({ is
 
   const fetchOpportunities = () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      setOpportunities(getLiveArbitrageScanner());
-      setIsRefreshing(false);
-    }, 250);
+    setOpportunities(getLiveArbitrageScanner());
+    setIsRefreshing(false);
   };
 
   useEffect(() => {
