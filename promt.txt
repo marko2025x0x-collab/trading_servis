@@ -1,0 +1,45 @@
+Act as a Principal Full-Stack Engineer and UX/UI Designer. We are building a premium, subscription-based trading analytics SaaS using the `nextjs-antigravity-template`. 
+
+## 1. Tech Stack & Infrastructure
+* Framework: Next.js 16 (App Router), TypeScript, Tailwind CSS v4.
+* Database & Auth: Supabase (PostgreSQL, Realtime, Edge Functions).
+* Deployment: Vercel.
+* Charts: TradingView Lightweight Charts.
+* Integrations: TradeLocker API (for executing trades), News/Calendar API (for fundamental analysis).
+* Design System: Impeccable (`npx impeccable install`).
+
+## 2. Design Guidelines (Impeccable Style)
+Before writing UI code, run `/impeccable init` to establish the brand guidelines. Enforce the following rules strictly:
+* NO template-like interfaces. Do not use generic nested cards or drop shadows for everything.
+* Use a tinted neutral color palette (e.g., slate or zinc), strictly avoiding pure black (#000000) and pure white (#ffffff).
+* Use high-density, sharp typography suitable for a professional financial terminal. Use a monospace font (like JetBrains Mono or Geist Mono) for all numerical data and a clean grotesque for headings.
+* Embrace white space and typographic hierarchy instead of drawing borders around every metric.
+
+## 3. Database Schema (Supabase)
+Generate the SQL migrations to create the following tables:
+* `users` / `profiles`: Extending Supabase Auth with `subscription_status` (free, pro).
+* `signals`: Stores generated trading signals (symbol, direction, entry, sl, tp, confluence_score, timestamp).
+* `market_data`: Cache for historical candlestick data to feed the algorithms.
+
+## 4. Core Features to Implement
+
+Step 1: UI & Authentication Skeleton
+* Create the Next.js layout with Supabase SSR Auth.
+* Implement a Next.js Middleware to protect the `/pro-dashboard` route, redirecting non-subscribed users to a premium paywall landing page.
+
+Step 2: The Trading Terminal (Frontend)
+* Build a full-screen or highly asymmetrical dashboard layout.
+* Integrate `lightweight-charts` by TradingView to display real-time candlestick data.
+* Create a side-panel for the "Live Signal Feed" that listens to Supabase Realtime for new rows in the `signals` table.
+
+Step 3: Analytical Engine (Backend / Edge)
+* Write a TypeScript utility module for Candlestick Analysis (detecting Pin bars, Engulfing patterns) and Smart Money Concepts (identifying Fair Value Gaps and Break of Structure).
+* Write a Math/Quant module to calculate Z-Score (Mean Reversion), ATR (Volatility), and a weighted momentum score.
+* Create a fundamental filter function that blocks signal generation if high-impact news is detected within a 30-minute window.
+* Implement a scoring matrix: Combine the above factors into a `confluence_score`. Only return a valid signal if the score is > 80.
+
+Step 4: TradeLocker Integration
+* Create an API route (`/api/tradelocker/execute`) that securely takes a generated signal (Entry, SL, TP) and formats it into a Webhook or REST API call compatible with TradeLocker.
+
+## 5. Execution Plan
+Please acknowledge this prompt and begin by executing Step 1 and setting up the Impeccable design dictionary. Ask me for clarification on the TradeLocker API keys or News API provider once you reach those steps. Do not write the entire codebase in one response; work step-by-step and show me the progress.

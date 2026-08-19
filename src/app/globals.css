@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --font-mono: var(--font-azeret-mono), "Azeret Mono", ui-monospace, monospace;
+    --font-display: var(--font-chakra-petch), "Chakra Petch", sans-serif;
+    --font-serif: var(--font-zen-mincho), "Zen Old Mincho", serif;
+
+    --paper: #080b13;
+    --paper-soft: #0d1322;
+    --paper-deep: #131b2e;
+
+    --gold: #e09f3e;
+    --gold-bright: #f4a261;
+    --neon-cyan: #00f0ff;
+    --neon-rose: #ff2a5f;
+
+    --border-line: rgba(224, 159, 62, 0.25);
   }
 }
 
+/* Neo Mirai Cyber-Grid Background & Typography Rules */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--paper);
+  background-image: 
+    radial-gradient(circle at 66% 7%, rgba(224, 159, 62, 0.07) 0%, transparent 25rem),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: auto, 64px 64px, 64px 64px;
+  color: #f8fafc;
+  font-family: var(--font-serif);
+  overflow-x: hidden;
+}
+
+/* Neo Mirai Monospace & Display Class Utility */
+.font-neo-mono {
+  font-family: var(--font-mono);
+}
+
+.font-neo-display {
+  font-family: var(--font-display);
+}
+
+.font-neo-serif {
+  font-family: var(--font-serif);
+}
+
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Neo Mirai Signature Brutalist Card & Badge Styling */
+.neo-mirai-card {
+  background: rgba(13, 19, 34, 0.9);
+  border: 1px solid rgba(224, 159, 62, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.neo-mirai-card:hover {
+  border-color: rgba(0, 240, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+}
+
+.neo-mirai-badge {
+  background: rgba(224, 159, 62, 0.15);
+  border: 1px solid rgba(224, 159, 62, 0.4);
+  color: #f4a261;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Neo Mirai Ticket Pill (Action Button) */
+.ticket-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  color: #080b13;
+  background: #e09f3e;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 9999px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ticket-pill:hover {
+  background: #00f0ff;
+  color: #080b13;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #080b13;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e09f3e;
 }
