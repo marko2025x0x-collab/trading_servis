@@ -18,86 +18,91 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
   const zPercentage = (zAbs / 3) * 100;
 
   return (
-    <div className="w-full bg-[#0d1424] border border-slate-800/80 rounded-lg p-3.5 space-y-4 shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+    <div className="w-full neo-panel rounded-[3px] p-3.5 space-y-3 shadow-xl neo-hud-bracket font-neo-mono">
+      <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
         <div className="flex items-center gap-2">
-          <Gauge className="w-4 h-4 text-sky-400" />
-          <h3 className="font-semibold text-slate-200 text-xs tracking-wide">{t.quantMetricsTitle}</h3>
+          <Gauge className="w-4 h-4 text-[#00F5D4]" />
+          <h3 className="font-extrabold text-[#E2E8F0] text-xs tracking-wider uppercase flex items-center gap-2">
+            <span>{t.quantMetricsTitle}</span>
+            <span className="neo-hud-badge">
+              // QUANT RADAR
+            </span>
+          </h3>
         </div>
-        <span className="text-[10px] text-slate-400 font-mono">{t.calculatedFor} {symbol}</span>
+        <span className="text-[10px] text-[#64748B] font-mono-num">{t.calculatedFor} [{symbol}]</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Z-Score Card */}
-        <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg space-y-2 font-mono-num">
+        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-2 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400">{t.zScoreTitle}</span>
+            <span className="text-[#64748B]">{t.zScoreTitle}</span>
             <span
-              className={`font-bold ${
+              className={`font-extrabold ${
                 quant.zScore > 1.8
-                  ? 'text-rose-400'
+                  ? 'text-[#FF2A6D]'
                   : quant.zScore < -1.8
-                  ? 'text-emerald-400'
-                  : 'text-slate-300'
+                  ? 'text-[#00FF9D]'
+                  : 'text-[#E2E8F0]'
               }`}
             >
               {quant.zScore > 0 ? `+${quant.zScore}` : quant.zScore}
             </span>
           </div>
 
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
+          <div className="w-full h-1.5 bg-[#0F172A] rounded-full overflow-hidden flex">
             <div
               className={`h-full transition-all duration-300 ${
-                quant.zScore > 0 ? 'bg-rose-500' : 'bg-emerald-500'
+                quant.zScore > 0 ? 'bg-[#FF2A6D]' : 'bg-[#00FF9D]'
               }`}
               style={{ width: `${zPercentage}%` }}
             />
           </div>
 
-          <div className="text-[10px] text-slate-400 flex items-center justify-between font-mono">
+          <div className="text-[9px] text-[#64748B] flex items-center justify-between font-mono">
             <span>{t.oversold}</span>
             <span>{t.overbought}</span>
           </div>
         </div>
 
         {/* ATR Volatility Card */}
-        <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg space-y-1 font-mono-num">
+        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400">{t.atrTitle}</span>
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[#64748B]">{t.atrTitle}</span>
+            <Flame className="w-3.5 h-3.5 text-[#FFB800]" />
           </div>
-          <div className="text-lg font-bold text-slate-100">{quant.atr}</div>
-          <div className="text-[10px] text-slate-400 font-mono">{t.dynamicStop}</div>
+          <div className="text-lg font-extrabold text-[#E2E8F0]">{quant.atr}</div>
+          <div className="text-[9px] text-[#64748B] font-mono">{t.dynamicStop}</div>
         </div>
 
         {/* Momentum Card */}
-        <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg space-y-1 font-mono-num">
+        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1 font-mono-num">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400">{t.momentumTitle}</span>
+            <span className="text-[#64748B]">{t.momentumTitle}</span>
             {quant.momentumScore > 50 ? (
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <TrendingUp className="w-3.5 h-3.5 text-[#00FF9D]" />
             ) : (
-              <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+              <TrendingDown className="w-3.5 h-3.5 text-[#FF2A6D]" />
             )}
           </div>
-          <div className="text-lg font-bold text-sky-400">{quant.momentumScore}%</div>
-          <div className="text-[10px] text-slate-400 font-mono">{t.multiTfRoc}</div>
+          <div className="text-lg font-extrabold text-[#00F5D4]">{quant.momentumScore}%</div>
+          <div className="text-[9px] text-[#64748B] font-mono">{t.multiTfRoc}</div>
         </div>
 
         {/* News Filter Card */}
-        <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg space-y-1">
+        <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400 flex items-center gap-1">
-              <Newspaper className="w-3.5 h-3.5 text-sky-400" /> {t.fundamentalRadar}
+            <span className="text-[#64748B] flex items-center gap-1">
+              <Newspaper className="w-3.5 h-3.5 text-[#00F5D4]" /> {t.fundamentalRadar}
             </span>
-            <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-[9px] font-mono font-bold">
+            <span className="neo-hud-badge">
               {t.safe}
             </span>
           </div>
-          <div className="text-xs text-slate-300 truncate font-semibold">
+          <div className="text-xs text-[#E2E8F0] truncate font-bold">
             {getSymbolFundamentalNews(symbol)[0]?.title || DYNAMIC_SYMBOL_NEWS_FEED[0].title}
           </div>
-          <div className="text-[10px] text-amber-400 font-mono">
+          <div className="text-[9px] text-[#FFB800] font-mono-num">
             {getSymbolFundamentalNews(symbol)[0]?.currency || 'USD'} • High Impact
           </div>
         </div>

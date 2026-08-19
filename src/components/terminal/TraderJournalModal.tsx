@@ -17,12 +17,8 @@ import {
   CheckCircle2,
   Lightbulb,
   Sparkles,
-  DollarSign,
-  TrendingUp,
-  Download,
   Upload,
   BarChart3,
-  ShieldCheck,
 } from 'lucide-react';
 
 interface TraderJournalModalProps {
@@ -171,23 +167,23 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div className="bg-[#0f172a] border border-slate-700 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-neo-mono select-none">
+      <div className="neo-panel rounded-[3px] w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl neo-hud-bracket animate-in fade-in duration-200">
         {/* Header */}
-        <div className="p-4 bg-[#090d16] border-b border-slate-800 flex items-center justify-between">
+        <div className="p-3.5 bg-[#090E1C] border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            <div className="w-8 h-8 rounded-[2px] bg-[#00F5D4]/10 border border-[#00F5D4]/30 flex items-center justify-center text-[#00F5D4]">
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="font-bold text-slate-100 text-sm tracking-wide flex items-center gap-2">
+              <h2 className="font-extrabold text-[#E2E8F0] text-xs tracking-wider flex items-center gap-2 font-neo-display">
                 {t.traderJournal}
-                <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40 text-[10px] font-mono font-bold">
-                  {stats.winRate}% Win Rate
+                <span className="neo-hud-badge">
+                  [SYS::JOURNAL] {stats.winRate}% WR
                 </span>
               </h2>
-              <p className="text-[11px] text-slate-400 font-mono">
-                {t.journalSummary}
+              <p className="text-[10px] text-[#64748B] font-neo-mono">
+                // QUANTITATIVE TRADE DIARY & AI PATTERN OPTIMIZER
               </p>
             </div>
           </div>
@@ -195,15 +191,15 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
           <div className="flex items-center gap-2">
             <button
               onClick={handleImportProSession}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-xs font-mono font-bold transition-all"
+              className="flex items-center gap-1.5 px-3 py-1 bg-[#00FF9D]/10 hover:bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/30 rounded-[2px] text-xs font-neo-mono font-bold transition-all"
             >
-              <Upload className="w-3.5 h-3.5 text-emerald-400" />
-              Імпортувати сесію Pro Трейдерів
+              <Upload className="w-3.5 h-3.5 text-[#00FF9D]" />
+              Імпорт Pro Сесії
             </button>
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-[#64748B] hover:text-[#E2E8F0] p-1.5 rounded-[2px] hover:bg-[#0F172A] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -211,74 +207,74 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
         </div>
 
         {/* Dynamic Navigation Tabs */}
-        <div className="px-4 py-2 bg-[#090d16] border-b border-slate-800 flex items-center gap-2 text-xs font-mono">
+        <div className="px-4 py-2 bg-[#050811] border-b border-cyan-500/20 flex items-center gap-2 text-xs font-neo-mono">
           <button
             onClick={() => setActiveTab('LOG')}
-            className={`px-3 py-1 rounded font-bold transition-all ${
+            className={`px-3.5 py-1 rounded-[2px] font-bold transition-all ${
               activeTab === 'LOG'
-                ? 'bg-sky-500/20 text-sky-400 border border-sky-500/40'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/40'
+                : 'text-[#64748B] hover:text-[#E2E8F0]'
             }`}
           >
             ЖУРНАЛ УГОД ({trades.length})
           </button>
           <button
             onClick={() => setActiveTab('AI_OPTIMIZER')}
-            className={`px-3 py-1 rounded font-bold transition-all flex items-center gap-1 ${
+            className={`px-3.5 py-1 rounded-[2px] font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'AI_OPTIMIZER'
-                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/40'
+                : 'text-[#64748B] hover:text-[#E2E8F0]'
             }`}
           >
-            <BrainCircuit className="w-3.5 h-3.5 text-purple-400" />
+            <BrainCircuit className="w-3.5 h-3.5 text-[#00F5D4]" />
             AI НАВЧАННЯ ТА ОПТИМІЗАЦІЯ
           </button>
           <button
             onClick={() => setActiveTab('ANALYTICS')}
-            className={`px-3 py-1 rounded font-bold transition-all flex items-center gap-1 ${
+            className={`px-3.5 py-1 rounded-[2px] font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'ANALYTICS'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/40'
+                : 'text-[#64748B] hover:text-[#E2E8F0]'
             }`}
           >
-            <BarChart3 className="w-3.5 h-3.5 text-emerald-400" />
-            ОКРЕМА АНАЛІТИКА ЩОДЕННИКА
+            <BarChart3 className="w-3.5 h-3.5 text-[#00FF9D]" />
+            ОКРЕМА АНАЛІТИКА
           </button>
         </div>
 
         {/* Dynamic Statistics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-[#0d1424] border-b border-slate-800 text-center font-mono-num text-xs">
-          <div className="p-2 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-slate-400">{t.totalTrades}</div>
-            <div className="font-bold text-slate-100 text-sm">{stats.totalTrades}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-[#090E1C] border-b border-cyan-500/20 text-center font-mono-num text-xs">
+          <div className="p-2 bg-[#050811] rounded-[2px] border border-cyan-500/20">
+            <div className="text-[10px] text-[#64748B]">{t.totalTrades}</div>
+            <div className="font-extrabold text-[#E2E8F0] text-sm">{stats.totalTrades}</div>
           </div>
-          <div className="p-2 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-emerald-400">{t.winRate}</div>
-            <div className="font-bold text-emerald-400 text-sm">{stats.winRate}%</div>
+          <div className="p-2 bg-[#050811] rounded-[2px] border border-cyan-500/20">
+            <div className="text-[10px] text-[#00FF9D]">{t.winRate}</div>
+            <div className="font-extrabold text-[#00FF9D] text-sm">{stats.winRate}%</div>
           </div>
-          <div className="p-2 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-sky-400">{t.totalPnL}</div>
-            <div className="font-bold text-sky-400 text-sm">${stats.totalPnL}</div>
+          <div className="p-2 bg-[#050811] rounded-[2px] border border-cyan-500/20">
+            <div className="text-[10px] text-[#00F5D4]">{t.totalPnL}</div>
+            <div className="font-extrabold text-[#00F5D4] text-sm">${stats.totalPnL}</div>
           </div>
-          <div className="p-2 bg-[#111827] rounded border border-slate-800">
-            <div className="text-[10px] text-purple-400">{t.profitFactor}</div>
-            <div className="font-bold text-purple-300 text-sm">{stats.profitFactor}</div>
+          <div className="p-2 bg-[#050811] rounded-[2px] border border-cyan-500/20">
+            <div className="text-[10px] text-[#FFB800]">{t.profitFactor}</div>
+            <div className="font-extrabold text-[#FFB800] text-sm">{stats.profitFactor}</div>
           </div>
         </div>
 
         {/* Main Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {activeTab === 'LOG' && (
-            <div className="space-y-4">
+            <div className="space-y-4 font-neo-mono">
               {/* Header Action Bar */}
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-[#E2E8F0] uppercase tracking-wider">
                   {lang === 'uk' ? 'Список угод' : 'Trade Journal Log'} ({trades.length})
                 </h3>
 
                 <button
                   onClick={() => setShowAddForm(!showAddForm)}
-                  className="flex items-center gap-1.5 px-3 py-1 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded text-xs font-mono font-bold transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1 bg-[#00F5D4]/10 hover:bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/30 rounded-[2px] text-xs font-neo-mono font-bold transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {showAddForm ? (lang === 'uk' ? 'Скасувати' : 'Cancel') : t.addTrade}
@@ -289,66 +285,66 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
               {showAddForm && (
                 <form
                   onSubmit={handleAddTrade}
-                  className="p-4 bg-[#090d16] border border-slate-700 rounded-lg space-y-3 font-mono text-xs shadow-xl animate-in zoom-in-95 duration-150"
+                  className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[2px] space-y-3 font-neo-mono text-xs shadow-xl animate-in zoom-in-95 duration-150 neo-hud-bracket"
                 >
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono-num">
                     <div>
-                      <label className="text-[10px] text-slate-400">Пара / Символ</label>
+                      <label className="text-[10px] text-[#64748B]">Пара / Символ</label>
                       <input
                         type="text"
                         required
                         value={newSymbol}
                         onChange={(e) => setNewSymbol(e.target.value)}
-                        className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 font-bold focus:border-sky-500 focus:outline-none"
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400">Напрямок</label>
+                      <label className="text-[10px] text-[#64748B]">Напрямок</label>
                       <select
                         value={newDirection}
                         onChange={(e) => setNewDirection(e.target.value as 'BUY' | 'SELL')}
-                        className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 font-bold focus:border-sky-500 focus:outline-none"
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                       >
                         <option value="BUY">BUY</option>
                         <option value="SELL">SELL</option>
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400">Ціна входу</label>
+                      <label className="text-[10px] text-[#64748B]">Ціна входу</label>
                       <input
                         type="text"
                         required
                         value={newEntry}
                         onChange={(e) => setNewEntry(e.target.value)}
-                        className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none"
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] text-slate-400">PnL ($)</label>
+                      <label className="text-[10px] text-[#64748B]">PnL ($)</label>
                       <input
                         type="text"
                         required
                         value={newPnl}
                         onChange={(e) => setNewPnl(e.target.value)}
-                        className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 font-bold focus:border-sky-500 focus:outline-none"
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[10px] text-slate-400">Причина входу / Сетап</label>
+                    <label className="text-[10px] text-[#64748B]">Причина входу / Сетап</label>
                     <input
                       type="text"
                       required
                       value={newReason}
                       onChange={(e) => setNewReason(e.target.value)}
-                      className="w-full p-2 bg-[#111827] border border-slate-700 rounded text-slate-200 focus:border-sky-500 focus:outline-none"
+                      className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded shadow-lg transition-all"
+                    className="w-full py-2 bg-[#00F5D4] text-[#050811] font-bold rounded-[2px] shadow-lg hover:bg-[#00FF9D] transition-colors text-xs"
                   >
                     {t.saveNote}
                   </button>
@@ -357,7 +353,7 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
 
               {/* Trades List */}
               {trades.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 font-mono text-xs">
+                <div className="p-8 text-center text-[#64748B] font-neo-mono text-xs">
                   {t.noTradesInJournal}
                 </div>
               ) : (
@@ -367,33 +363,33 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                     return (
                       <div
                         key={trd.id}
-                        className={`p-3.5 rounded-lg border transition-all ${
+                        className={`p-3.5 rounded-[2px] border transition-all ${
                           isWin
-                            ? 'bg-[#0e1f1a]/60 border-emerald-500/30'
-                            : 'bg-[#261017]/60 border-rose-500/30'
+                            ? 'bg-[#00FF9D]/5 border-[#00FF9D]/30'
+                            : 'bg-[#FF2A6D]/5 border-[#FF2A6D]/30'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2 font-mono">
-                            <span className="font-extrabold text-slate-100 text-sm">{trd.symbol}</span>
+                            <span className="font-extrabold text-[#E2E8F0] text-sm">{trd.symbol}</span>
                             <span
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              className={`px-2 py-0.5 rounded-[2px] text-[10px] font-bold ${
                                 trd.direction === 'BUY'
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                  : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                  ? 'bg-[#00FF9D]/15 text-[#00FF9D] border border-[#00FF9D]/30'
+                                  : 'bg-[#FF2A6D]/15 text-[#FF2A6D] border border-[#FF2A6D]/30'
                               }`}
                             >
                               {trd.direction}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono">{trd.timeframe}</span>
+                            <span className="text-[10px] text-[#64748B] font-mono">{trd.timeframe}</span>
                           </div>
 
                           <div className="flex items-center gap-3">
                             <div className="text-right">
-                              <div className="text-[10px] text-slate-400">PnL</div>
+                              <div className="text-[10px] text-[#64748B]">PnL</div>
                               <div
                                 className={`font-bold text-sm ${
-                                  isWin ? 'text-emerald-400' : 'text-rose-400'
+                                  isWin ? 'text-[#00FF9D]' : 'text-[#FF2A6D]'
                                 }`}
                               >
                                 {isWin ? `+$${trd.pnl}` : `-$${Math.abs(trd.pnl || 0)}`}
@@ -402,7 +398,7 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
 
                             <button
                               onClick={() => handleDeleteTrade(trd.id)}
-                              className="text-slate-500 hover:text-rose-400 p-1.5 rounded hover:bg-rose-950/40 transition-colors"
+                              className="text-[#64748B] hover:text-[#FF2A6D] p-1.5 rounded hover:bg-[#FF2A6D]/20 transition-colors"
                               title={t.deleteTrade}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -410,11 +406,11 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                           </div>
                         </div>
 
-                        <div className="space-y-1 bg-[#090d16]/80 p-2.5 rounded border border-slate-800/80 text-xs">
-                          <div className="flex items-start gap-1.5 text-slate-300">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1 bg-[#050811] p-2.5 rounded-[2px] border border-cyan-500/15 text-xs">
+                          <div className="flex items-start gap-1.5 text-[#E2E8F0]">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#00F5D4] shrink-0 mt-0.5" />
                             <div>
-                              <span className="text-slate-400 font-semibold">{t.entryReason}: </span>
+                              <span className="text-[#64748B] font-semibold">{t.entryReason}: </span>
                               <span>{trd.entryReason}</span>
                             </div>
                           </div>
@@ -428,13 +424,13 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
           )}
 
           {activeTab === 'AI_OPTIMIZER' && (
-            <div className="space-y-4 font-sans">
-              <div className="p-4 bg-purple-950/20 border border-purple-500/30 rounded-xl space-y-2">
-                <div className="flex items-center gap-2 text-purple-300 font-bold text-sm">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+            <div className="space-y-4 font-neo-mono">
+              <div className="p-4 bg-[#00F5D4]/10 border border-[#00F5D4]/30 rounded-[2px] space-y-2">
+                <div className="flex items-center gap-2 text-[#00F5D4] font-bold text-sm">
+                  <Sparkles className="w-4 h-4 text-[#00F5D4]" />
                   {lang === 'uk' ? 'AI Рекомендації для підвищення прибутковості' : 'AI Profit Optimization Advice'}
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-mono">
+                <p className="text-xs text-[#E2E8F0] leading-relaxed font-mono">
                   {lang === 'uk'
                     ? `Аналіз показує Win Rate ${stats.winRate}% на основі ${stats.totalTrades} угод. AI обчислив наступні кроки:`
                     : `Analysis shows ${stats.winRate}% Win Rate across ${stats.totalTrades} trades. AI generated the following steps:`}
@@ -445,21 +441,21 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                 {aiAdvice.map((adv) => (
                   <div
                     key={adv.id}
-                    className="p-4 bg-[#111827] border border-slate-800 rounded-xl space-y-2 hover:border-purple-500/40 transition-all"
+                    className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] space-y-2 hover:border-[#00F5D4]/40 transition-all"
                   >
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4 text-amber-400" />
+                      <h4 className="font-bold text-[#E2E8F0] text-sm flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-[#FFB800]" />
                         {adv.title}
                       </h4>
-                      <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 border border-purple-500/40 rounded text-[10px] font-mono font-bold">
+                      <span className="neo-hud-badge">
                         {adv.impactScore}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-300 leading-relaxed">{adv.description}</p>
+                    <p className="text-xs text-[#E2E8F0] leading-relaxed">{adv.description}</p>
 
-                    <div className="p-2.5 bg-[#090d16] border border-purple-900/40 rounded text-xs text-purple-300 font-mono flex items-center gap-2">
+                    <div className="p-2.5 bg-[#050811] border border-cyan-500/20 rounded text-xs text-[#00F5D4] font-mono flex items-center gap-2">
                       <span className="font-bold">{lang === 'uk' ? 'Крок дії:' : 'Action:'}</span> {adv.actionableStep}
                     </div>
                   </div>
@@ -469,29 +465,29 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
           )}
 
           {activeTab === 'ANALYTICS' && (
-            <div className="space-y-4 font-mono">
-              <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-400" />
+            <div className="space-y-4 font-neo-mono">
+              <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[#00FF9D]" />
                 Окрема Аналітика Доходності Торгового Щоденника
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono-num">
-                <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl text-center">
-                  <div className="text-xs text-slate-400 uppercase">Очікувана вигода (Expectancy)</div>
-                  <div className="text-2xl font-extrabold text-emerald-400 mt-1">+${stats.totalTrades > 0 ? (stats.totalPnL / stats.totalTrades).toFixed(2) : '0.00'}</div>
-                  <div className="text-[10px] text-slate-500 mt-1">На кожен 1 лот</div>
+                <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
+                  <div className="text-xs text-[#64748B] uppercase">Очікувана вигода (Expectancy)</div>
+                  <div className="text-2xl font-extrabold text-[#00FF9D] mt-1">+${stats.totalTrades > 0 ? (stats.totalPnL / stats.totalTrades).toFixed(2) : '0.00'}</div>
+                  <div className="text-[10px] text-[#64748B] mt-1">На кожен 1 лот</div>
                 </div>
 
-                <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl text-center">
-                  <div className="text-xs text-slate-400 uppercase">Коефіцієнт Шарпа (Sharpe Ratio)</div>
-                  <div className="text-2xl font-extrabold text-purple-300 mt-1">2.41</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Висока стабільність стратегії</div>
+                <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
+                  <div className="text-xs text-[#64748B] uppercase">Коефіцієнт Шарпа (Sharpe Ratio)</div>
+                  <div className="text-2xl font-extrabold text-[#00F5D4] mt-1">2.41</div>
+                  <div className="text-[10px] text-[#64748B] mt-1">Висока стабільність стратегії</div>
                 </div>
 
-                <div className="p-4 bg-[#0d1424] border border-slate-800 rounded-xl text-center">
-                  <div className="text-xs text-slate-400 uppercase">Максимальна просідання (Max DD)</div>
-                  <div className="text-2xl font-extrabold text-rose-400 mt-1">-3.8%</div>
-                  <div className="text-[10px] text-slate-500 mt-1">Контрольований ризик</div>
+                <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
+                  <div className="text-xs text-[#64748B] uppercase">Максимальна просідання (Max DD)</div>
+                  <div className="text-2xl font-extrabold text-[#FF2A6D] mt-1">-3.8%</div>
+                  <div className="text-[10px] text-[#64748B] mt-1">Контрольований ризик</div>
                 </div>
               </div>
             </div>
