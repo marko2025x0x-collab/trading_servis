@@ -36,13 +36,14 @@ export async function middleware(request: NextRequest) {
 
   const { pathname, searchParams } = request.nextUrl;
   const isDemoMode = searchParams.get('demo') === 'true';
+  const isProCookie = request.cookies.get('user_subscription_status')?.value === 'pro';
 
-  // Protect /pro-dashboard if not demo mode and not authenticated
+  // Strict route gating: Require login or active subscription for /pro-dashboard
   if (pathname.startsWith('/pro-dashboard')) {
-    const isProCookie = request.cookies.get('user_subscription_status')?.value === 'pro';
     if (!user && !isDemoMode && !isProCookie) {
-      // Allow seamless access to pro dashboard by default or redirect to login
-      return supabaseResponse;
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
     }
   }
 

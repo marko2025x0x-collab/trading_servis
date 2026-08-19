@@ -1,28 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language, getTranslation } from '@/lib/i18n';
 import {
   User,
   X,
   ShieldCheck,
   Globe,
-  Wallet,
   Key,
   CreditCard,
-  LogOut,
   LogIn,
   UserPlus,
-  CheckCircle2,
-  Lock,
   Sparkles,
-  Link2,
-  RefreshCw,
-  Mail,
-  ArrowRight,
-  ExternalLink,
   Sliders,
-  ChevronRight,
+  ExternalLink,
+  Check,
+  Zap,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -51,6 +44,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [password, setPassword] = useState('');
   const [accountType, setAccountType] = useState<'DEMO' | 'REAL'>('DEMO');
 
+  // Subscription State
+  const [subscriptionTier, setSubscriptionTier] = useState<'FREE' | 'PRO' | 'ENTERPRISE'>('PRO');
+  const [selectedBillingPlan, setSelectedBillingPlan] = useState<'PRO' | 'ENTERPRISE'>('PRO');
+  const [subscriptionSuccessMessage, setSubscriptionSuccessMessage] = useState<string | null>(null);
+
   // Feedback Banner State
   const [authFeedback, setAuthFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -58,7 +56,25 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const demoBalance = 50000.0;
   const realBalance = 12450.80;
 
+  useEffect(() => {
+    // Read subscription cookie
+    const hasProCookie = document.cookie.includes('user_subscription_status=pro') || document.cookie.includes('user_subscription_status=enterprise');
+    if (hasProCookie) {
+      setSubscriptionTier('PRO');
+    }
+  }, []);
+
   if (!isOpen) return null;
+
+  // Handle Subscription Purchase / Activation
+  const handleActivateSubscription = (plan: 'PRO' | 'ENTERPRISE') => {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 30);
+    document.cookie = `user_subscription_status=${plan.toLowerCase()}; path=/; expires=${expires.toUTCString()}`;
+    setSubscriptionTier(plan);
+    setSubscriptionSuccessMessage(`ПІДПИСКУ ${plan} QUANT TIER УСПІШНО ОФОРМЛЕНО ТА АКТИВОВАНО ДО ${expires.toLocaleDateString()}`);
+    setTimeout(() => setSubscriptionSuccessMessage(null), 5000);
+  };
 
   // Handle Google OAuth Sign-in / Registration
   const handleGoogleSignIn = async () => {
@@ -172,7 +188,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         {/* Drawer Header */}
         <div className="p-4 border-b border-cyan-500/20 flex items-center justify-between bg-[#050811]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20">
+            <div className="w-10 h-10 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] via-[#00FF9D] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20">
               <div className="w-full h-full bg-[#050811] rounded-[2px] flex items-center justify-center font-bold text-[#00F5D4] text-sm">
                 QT
               </div>
@@ -180,7 +196,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div>
               <div className="font-extrabold text-sm text-[#E2E8F0] tracking-wide font-neo-display flex items-center gap-1.5">
                 <span>ПРОФІЛЬ ТРЕЙДЕРА</span>
-                <span className="neo-hud-badge py-0.5 px-1.5 text-[9px]">[ONLINE]</span>
+                <span className="neo-hud-badge py-0.5 px-1.5 text-[9px] bg-[#00FF9D]/20 text-[#00FF9D] border-[#00FF9D]/40 font-bold">
+                  [{subscriptionTier} TIER]
+                </span>
               </div>
               <div className="text-[11px] text-[#94A3B8] flex items-center gap-1">
                 <span>{userEmail}</span>
@@ -242,18 +260,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('exchanges')}
-            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
-              activeTab === 'exchanges'
-                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
-                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
-            }`}
-          >
-            <Key className="w-3.5 h-3.5" />
-            TradeLocker
-          </button>
-
-          <button
             onClick={() => setActiveTab('subscription')}
             className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
               activeTab === 'subscription'
@@ -263,6 +269,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           >
             <CreditCard className="w-3.5 h-3.5" />
             Підписка
+          </button>
+
+          <button
+            onClick={() => setActiveTab('exchanges')}
+            className={`flex-1 py-3 border-b-2 text-center transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'exchanges'
+                ? 'border-[#00F5D4] text-[#00F5D4] bg-cyan-500/10'
+                : 'border-transparent text-[#94A3B8] hover:text-[#E2E8F0]'
+            }`}
+          >
+            <Key className="w-3.5 h-3.5" />
+            TradeLocker
           </button>
 
           <button
@@ -284,13 +302,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* PROFILE TAB */}
           {activeTab === 'profile' && (
             <div className="space-y-4">
+              {/* Profile Details */}
               <div className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[3px] space-y-3">
                 <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider flex items-center gap-2">
                   <Sliders className="w-3.5 h-3.5 text-[#00F5D4]" /> Особисті Налаштування
                 </h3>
 
                 <div>
-                  <label className="text-[#94A3B8] text-[10px] block mb-1">ІМ'Я ТРЕЙДЕРА</label>
+                  <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">ІМ'Я ТРЕЙДЕРА</label>
                   <input
                     type="text"
                     value={userName}
@@ -300,13 +319,21 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-[#94A3B8] text-[10px] block mb-1">EMAIL АКАУНТУ</label>
+                  <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">EMAIL АКАУНТУ</label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     className="w-full p-2 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                   />
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-cyan-500/10">
+                  <span className="text-[#94A3B8] text-[11px]">СТАТУС ПІДПИСКИ:</span>
+                  <span className="font-extrabold text-[#00FF9D] uppercase flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-[#00FF9D]" />
+                    {subscriptionTier} QUANT TIER
+                  </span>
                 </div>
               </div>
 
@@ -350,6 +377,103 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           )}
 
+          {/* SUBSCRIPTION TAB */}
+          {activeTab === 'subscription' && (
+            <div className="space-y-4">
+              {/* Success Notification Banner */}
+              {subscriptionSuccessMessage && (
+                <div className="p-3 bg-[#00FF9D]/15 border border-[#00FF9D]/40 text-[#00FF9D] rounded-[2px] text-xs font-bold flex items-center gap-2">
+                  <Check className="w-4 h-4 shrink-0 text-[#00FF9D]" />
+                  <span>{subscriptionSuccessMessage}</span>
+                </div>
+              )}
+
+              {/* Active Plan Card */}
+              <div className="p-4 bg-gradient-to-br from-cyan-950/40 via-[#050811] to-violet-950/40 border border-cyan-500/40 rounded-[3px] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#00F5D4]" />
+                    <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider">
+                      ПОТОЧНИЙ ТАРИФ: {subscriptionTier} QUANT
+                    </h3>
+                  </div>
+                  <span className="px-2 py-0.5 bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/40 rounded-[2px] font-extrabold text-[10px]">
+                    [АКТИВНА]
+                  </span>
+                </div>
+
+                <p className="text-[#94A3B8] text-[11px] leading-relaxed">
+                  Повний доступ до 4-шарової конфлюенс-матриці, квантових сигналів &gt;80% Confluence Score та 1-клік автоматичного виконання на TradeLocker.
+                </p>
+              </div>
+
+              {/* Plan Option Selector Form */}
+              <div className="p-4 bg-[#050811] border border-cyan-500/20 rounded-[3px] space-y-4">
+                <h4 className="font-extrabold text-[#E2E8F0] text-xs uppercase tracking-wider">
+                  ОБЕРІТЬ ТАРФ ТА ОФОРМІТЬ ПІДПИСКУ:
+                </h4>
+
+                {/* Plan 1: PRO QUANT */}
+                <div
+                  onClick={() => setSelectedBillingPlan('PRO')}
+                  className={`p-3 rounded-[3px] border cursor-pointer transition-all space-y-2 ${
+                    selectedBillingPlan === 'PRO'
+                      ? 'bg-cyan-500/10 border-[#00F5D4] text-[#E2E8F0]'
+                      : 'bg-[#090E1C] border-slate-800 text-[#94A3B8] hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-extrabold text-xs text-[#00F5D4] flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 fill-current" />
+                      PRO QUANT TIER
+                    </div>
+                    <span className="font-bold text-sm font-mono-num text-[#E2E8F0]">$49 <span className="text-[10px] text-[#94A3B8]">/міс</span></span>
+                  </div>
+                  <p className="text-[10px] text-[#94A3B8]">
+                    Confluence &gt;80%, TradeLocker AES-256 execution, Арбітражний сканер.
+                  </p>
+                </div>
+
+                {/* Plan 2: ENTERPRISE VIP */}
+                <div
+                  onClick={() => setSelectedBillingPlan('ENTERPRISE')}
+                  className={`p-3 rounded-[3px] border cursor-pointer transition-all space-y-2 ${
+                    selectedBillingPlan === 'ENTERPRISE'
+                      ? 'bg-violet-500/10 border-violet-500 text-[#E2E8F0]'
+                      : 'bg-[#090E1C] border-slate-800 text-[#94A3B8] hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-extrabold text-xs text-violet-400 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      ENTERPRISE VIP TIER
+                    </div>
+                    <span className="font-bold text-sm font-mono-num text-[#E2E8F0]">$149 <span className="text-[10px] text-[#94A3B8]">/міс</span></span>
+                  </div>
+                  <p className="text-[10px] text-[#94A3B8]">
+                    Безлімітні акаунти TradeLocker, Webhook Bridge API, пріоритетний сервер.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleActivateSubscription(selectedBillingPlan)}
+                  className="w-full py-3 bg-[#00F5D4] hover:bg-[#00FF9D] text-[#050811] font-extrabold rounded-[2px] text-xs transition-all shadow-lg shadow-[#00F5D4]/20 uppercase tracking-wider flex items-center justify-center gap-2"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  ОФОРМИТИ ПІДПИСКУ {selectedBillingPlan} (${selectedBillingPlan === 'PRO' ? '49' : '149'})
+                </button>
+              </div>
+
+              <a
+                href="/paywall"
+                className="block w-full py-2 bg-[#090E1C] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold text-xs transition-all"
+              >
+                ПЕРЕГЛЯНУТИ МАТРИЦЮ ПОРІВНЯННЯ ТАРИФІВ →
+              </a>
+            </div>
+          )}
+
           {/* TRADELOCKER TAB */}
           {activeTab === 'exchanges' && (
             <div className="space-y-4">
@@ -374,34 +498,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <Key className="w-3.5 h-3.5" />
                   КЕРУВАТИ КЛЮЧАМИ TRADELOCKER
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* SUBSCRIPTION TAB */}
-          {activeTab === 'subscription' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-br from-cyan-950/40 via-[#050811] to-violet-950/40 border border-cyan-500/40 rounded-[3px] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-[#00F5D4]" />
-                    <h3 className="font-bold text-[#E2E8F0] text-xs uppercase tracking-wider">NEXUS QUANT PRO TIER</h3>
-                  </div>
-                  <span className="px-2 py-0.5 bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 rounded-[2px] font-bold text-[10px]">
-                    АКТИВНА
-                  </span>
-                </div>
-
-                <p className="text-[#94A3B8] text-[11px] leading-relaxed">
-                  Доступ до 4-шарової конфлюенс-матриці, квантових сигналів &gt;80% Confluence Score та 1-клік автоматичного виконання на TradeLocker.
-                </p>
-
-                <a
-                  href="/paywall"
-                  className="block w-full py-2 bg-[#090E1C] hover:bg-cyan-500/10 text-[#00F5D4] border border-cyan-500/30 rounded-[2px] text-center font-bold text-xs transition-all"
-                >
-                  ПЕРЕГЛЯНУТИ ТАРИФИ ПІДПИСКИ ($49 / $149) →
-                </a>
               </div>
             </div>
           )}
@@ -538,7 +634,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
         {/* Drawer Footer */}
         <div className="p-3 border-t border-cyan-500/20 bg-[#050811] text-center text-[10px] text-[#64748B]">
-          NEXUS QUANT NEO MIRAI • PROFILE CONTROL PANEL
+          NEXUS QUANT NEO MIRAI • PROFILE & BILLING CONTROL PANEL
         </div>
       </aside>
     </div>
