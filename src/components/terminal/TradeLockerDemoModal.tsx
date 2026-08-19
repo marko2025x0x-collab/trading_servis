@@ -252,6 +252,28 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
             </div>
 
             <form onSubmit={handleSaveAccount} className="space-y-3 pt-1">
+              <div>
+                <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
+                  ПОПУЛЯРНІ СЕРВЕРИ (ШВИДКИЙ ВИБІР):
+                </label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {['FundingPips-Demo', 'FunderPro-Demo', 'FXIFY-Demo', 'Kinstellar-Demo', 'TradeLocker-Demo-Server-01'].map((srv) => (
+                    <button
+                      key={srv}
+                      type="button"
+                      onClick={() => setServer(srv)}
+                      className={`px-2 py-0.5 rounded-[2px] text-[10px] font-mono border transition-all ${
+                        server === srv
+                          ? 'bg-[#00F5D4]/20 text-[#00F5D4] border-[#00F5D4]'
+                          : 'bg-[#090E1C] text-[#94A3B8] border-cyan-500/20 hover:text-[#E2E8F0]'
+                      }`}
+                    >
+                      {srv}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
@@ -276,7 +298,7 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
                     required
                     value={server}
                     onChange={(e) => setServer(e.target.value)}
-                    placeholder="TradeLocker-Demo-Server-01"
+                    placeholder="FundingPips-Demo / TradeLocker-Demo"
                     className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-xs font-mono text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
                   />
                 </div>
