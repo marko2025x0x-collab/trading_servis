@@ -151,26 +151,26 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
         </div>
 
         {/* Left Half 2: Search Input & Watchlist Pills */}
-        <div className="flex items-center gap-2 shrink-0 bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex items-center gap-2 min-w-0 max-w-[520px] bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20">
           <form onSubmit={handleSearchSubmit} className="relative shrink-0">
             <input
               type="text"
               placeholder={lang === 'uk' ? 'Пошук пари...' : 'Search symbol...'}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-28 sm:w-36 pl-6 pr-2 py-0.5 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] placeholder:text-[#64748B] focus:outline-none focus:border-[#00F5D4] transition-all"
+              className="w-24 sm:w-32 pl-6 pr-2 py-0.5 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] placeholder:text-[#64748B] focus:outline-none focus:border-[#00F5D4] transition-all"
             />
             <Search className="w-3 h-3 text-[#64748B] absolute left-1.5 top-1.5" />
           </form>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 min-w-0 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
             {watchlist.map((sym) => {
               const isSelected = selectedSymbol === sym;
               return (
                 <div
                   key={sym}
                   onClick={() => onSymbolSelect(sym)}
-                  className={`group relative flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-neo-mono font-medium transition-all cursor-pointer whitespace-nowrap ${
+                  className={`group relative flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-neo-mono font-medium transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     isSelected
                       ? 'bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 font-bold shadow-[0_0_8px_rgba(0,245,212,0.2)]'
                       : 'text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#0F172A]'
@@ -191,7 +191,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="p-1 text-[#64748B] hover:text-[#00F5D4] transition-all rounded hover:bg-[#050811]"
+              className="p-1 text-[#64748B] hover:text-[#00F5D4] transition-all rounded hover:bg-[#050811] shrink-0"
               title="Додати валютну пару"
             >
               <Plus className="w-3.5 h-3.5" />
