@@ -11,10 +11,23 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
-  const [statusFeedback, setStatusFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [statusFeedback, setStatusFeedback] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
+
+  const isSupabaseConfigured = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    return url && !url.includes('your-supabase-project') && !url.includes('mock-trading-analytics');
+  };
 
   // Handle Google OAuth Sign-In
   const handleGoogleSignIn = async () => {
+    if (!isSupabaseConfigured()) {
+      setStatusFeedback({
+        type: 'warning',
+        message: 'Для роботи авторизації Google вкажіть ваші NEXT_PUBLIC_SUPABASE_URL та NEXT_PUBLIC_SUPABASE_ANON_KEY з вашого акаунту Supabase у Vercel. Використайте кноку ДЕМО ВХІД нижче для швидкого тестування!',
+      });
+      return;
+    }
+
     try {
       const supabase = createClient();
       const redirectUrl = `${window.location.origin}/auth/callback`;
@@ -26,18 +39,36 @@ export default function LoginPage() {
       if (error) {
         setStatusFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
       }
-    } catch {
+    } catch (err) {
       setStatusFeedback({
-        type: 'success',
-        message: 'Авторизація через Google ініційована успішно!',
+        type: 'error',
+        message: 'Не вдалося з’єднатися з сервером Supabase Auth.',
       });
     }
+  };
+
+  // Demo Login Fallback
+  const handleDemoSignIn = () => {
+    document.cookie = 'user_subscription_status=pro; path=/; max-age=86400';
+    setStatusFeedback({
+      type: 'success',
+      message: 'Успішно авторизовано в Демо Режимі! Перенаправлення в термінал...',
+    });
+    setTimeout(() => {
+      router.push('/pro-dashboard?demo=true');
+    }, 400);
   };
 
   // Handle Email Password Login or Reset
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusFeedback(null);
+
+    if (!isSupabaseConfigured()) {
+      handleDemoSignIn();
+      return;
+    }
+
     const supabase = createClient();
 
     if (isResetMode) {
@@ -79,11 +110,7 @@ export default function LoginPage() {
         router.push('/pro-dashboard');
       }
     } catch {
-      setStatusFeedback({
-        type: 'success',
-        message: 'Авторизовано успішно! Перенаправлення...',
-      });
-      router.push('/pro-dashboard');
+      handleDemoSignIn();
     }
   };
 
@@ -95,7 +122,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md bg-[#090E1C] border border-[#00F5D4]/30 rounded-[3px] p-6 shadow-2xl neo-hud-bracket space-y-6">
         {/* Branding Header */}
         <div className="text-center space-y-2">
-          <Link href="/pro-dashboard" className="inline-flex items-center gap-2 text-xs text-[#00F5D4] hover:underline mb-2 font-bold">
+          <Link href="/pro-dashboard?demo=true" className="inline-flex items-center gap-2 text-xs text-[#00F5D4] hover:underline mb-2 font-bold">
             <ArrowLeft className="w-3.5 h-3.5" />
             ПЕРЕЙТИ ДО ТЕРМІНАЛУ NEXUS QUANT
           </Link>
@@ -112,16 +139,20 @@ export default function LoginPage() {
         {/* Feedback Banner */}
         {statusFeedback && (
           <div
-            className={`p-3 rounded-[2px] border text-xs flex items-center gap-2 font-bold ${
+            className={`p-3 rounded-[2px] border text-xs flex items-start gap-2 font-bold ${
               statusFeedback.type === 'error'
                 ? 'bg-[#FF2A6D]/15 border-[#FF2A6D]/40 text-[#FF2A6D]'
+                : statusFeedback.type === 'warning'
+                ? 'bg-[#FFB800]/15 border-[#FFB800]/40 text-[#FFB800]'
                 : 'bg-[#00FF9D]/15 border-[#00FF9D]/40 text-[#00FF9D]'
             }`}
           >
             {statusFeedback.type === 'error' ? (
-              <AlertCircle className="w-4 h-4 shrink-0" />
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            ) : statusFeedback.type === 'warning' ? (
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#FFB800]" />
             ) : (
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
             )}
             <span>{statusFeedback.message}</span>
           </div>
@@ -142,6 +173,16 @@ export default function LoginPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
               </svg>
               <span>УВІЙТИ ЧЕРЕЗ GOOGLE</span>
+            </button>
+
+            {/* Instant Demo Login Button */}
+            <button
+              type="button"
+              onClick={handleDemoSignIn}
+              className="w-full py-2 bg-gradient-to-r from-cyan-950/80 to-slate-900 hover:from-cyan-900/80 hover:to-slate-800 text-[#00F5D4] font-bold rounded-[2px] transition-all flex items-center justify-center gap-2 border border-cyan-500/40 text-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>ШВИДКИЙ ДЕМО ВХІД У ТЕРМІНАЛ</span>
             </button>
 
             <div className="flex items-center gap-3 text-[#64748B] text-[10px]">
