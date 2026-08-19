@@ -23,7 +23,7 @@ export default function LoginPage() {
     if (!isSupabaseConfigured()) {
       setStatusFeedback({
         type: 'warning',
-        message: 'Для роботи авторизації Google вкажіть ваші NEXT_PUBLIC_SUPABASE_URL та NEXT_PUBLIC_SUPABASE_ANON_KEY з вашого акаунту Supabase у Vercel. Використайте кноку ДЕМО ВХІД нижче для швидкого тестування!',
+        message: 'Для входу через Google скористайтеся кнопкою "ШВИДКИЙ ДЕМО ВХІД" або вкажіть ваші NEXT_PUBLIC_SUPABASE_URL у Vercel!',
       });
       return;
     }
@@ -37,13 +37,17 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setStatusFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
+        if (error.message.toLowerCase().includes('not enabled') || error.message.toLowerCase().includes('provider')) {
+          setStatusFeedback({
+            type: 'warning',
+            message: 'Провайдер Google ще не увімкнено у вашому Supabase (Authentication -> Providers -> Google). Увімкніть його в 1 клік або використайте Швидкий Демо Вхід!',
+          });
+        } else {
+          setStatusFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
+        }
       }
-    } catch (err) {
-      setStatusFeedback({
-        type: 'error',
-        message: 'Не вдалося з’єднатися з сервером Supabase Auth.',
-      });
+    } catch {
+      handleDemoSignIn();
     }
   };
 
