@@ -9,6 +9,7 @@ import { TerminalHeader } from '@/components/terminal/TerminalHeader';
 import { TradingChart } from '@/components/terminal/TradingChart';
 import { SignalFeed } from '@/components/terminal/SignalFeed';
 import { QuantMetricsPanel } from '@/components/terminal/QuantMetricsPanel';
+import { OpenPositionsPanel } from '@/components/terminal/OpenPositionsPanel';
 import { SignalDetailModal } from '@/components/terminal/SignalDetailModal';
 import { TraderJournalModal } from '@/components/terminal/TraderJournalModal';
 import { ArbitrageScannerModal } from '@/components/terminal/ArbitrageScannerModal';
@@ -245,20 +246,33 @@ export default function ProDashboardPage() {
 
       {/* Main Terminal Grid Workspace */}
       <main className="flex-1 p-3 lg:p-4 space-y-4 max-w-[1920px] mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[540px]">
-          {/* Chart View (8 cols) */}
-          <div className="lg:col-span-8 flex flex-col h-full">
-            <TradingChart
-              symbol={symbol}
-              candles={candles}
-              activeSignal={selectedSignal}
-              timeframe={timeframe}
-              onTimeframeChange={setTimeframe}
-              lang={lang}
-            />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-[580px]">
+          {/* Left Column (8 cols) Split into 2 Stacked Halves: Top = Chart, Bottom = TradeLocker Positions */}
+          <div className="lg:col-span-8 flex flex-col gap-3 h-full">
+            {/* Top Half: Trading Chart */}
+            <div className="h-[380px] lg:h-[400px] flex flex-col">
+              <TradingChart
+                symbol={symbol}
+                candles={candles}
+                activeSignal={selectedSignal}
+                timeframe={timeframe}
+                onTimeframeChange={setTimeframe}
+                lang={lang}
+              />
+            </div>
+
+            {/* Bottom Half: TradeLocker Open Positions Matrix */}
+            <div className="flex-1 min-h-[180px] flex flex-col">
+              <OpenPositionsPanel
+                positions={positions}
+                onClosePosition={handleClosePosition}
+                onOpenTradeLockerModal={() => setIsTlDemoOpen(true)}
+                lang={lang}
+              />
+            </div>
           </div>
 
-          {/* Live Signal Feed (4 cols) */}
+          {/* Right Column (4 cols): Live Signal Feed */}
           <div className="lg:col-span-4 flex flex-col h-full">
             <SignalFeed
               signals={signals}

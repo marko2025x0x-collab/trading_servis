@@ -8,7 +8,6 @@ import {
   BookOpen,
   ArrowRightLeft,
   Sparkles,
-  Globe,
   Wallet,
   Plus,
   X,
@@ -116,94 +115,88 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
 
   return (
     <header className="w-full bg-[#050811] border-b border-cyan-500/20 px-3 py-2 flex items-center justify-between gap-2 font-neo-mono select-none neo-hud-bracket shrink-0">
-      {/* Left: Branding, System Badges & Search */}
+      {/* Left Block Split in 2 Halves */}
       <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-0.5">
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <div className="relative flex items-center justify-center">
-            <div className="w-8 h-8 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] via-[#00FF9D] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20 group-hover:shadow-[#00F5D4]/50 transition-all duration-300">
-              <div className="w-full h-full bg-[#050811] rounded-[2px] flex items-center justify-center">
-                <Hexagon className="w-4 h-4 text-[#00F5D4] fill-[#00F5D4]/20 stroke-[1.75]" />
+        {/* Left Half 1: Branding & Micro System Badges */}
+        <div className="flex items-center gap-2.5 shrink-0 bg-[#090E1C] px-2.5 py-1 rounded-[2px] border border-cyan-500/20">
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <div className="relative flex items-center justify-center">
+              <div className="w-7 h-7 rounded-[3px] bg-gradient-to-tr from-[#00F5D4] via-[#00FF9D] to-violet-600 p-[1px] shadow-lg shadow-[#00F5D4]/20 group-hover:shadow-[#00F5D4]/50 transition-all duration-300">
+                <div className="w-full h-full bg-[#050811] rounded-[2px] flex items-center justify-center">
+                  <Hexagon className="w-3.5 h-3.5 text-[#00F5D4] fill-[#00F5D4]/20 stroke-[1.75]" />
+                </div>
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-[#00FF9D] rounded-full border border-[#050811] animate-pulse" />
+            </div>
+
+            <div className="shrink-0">
+              <div className="font-extrabold text-xs tracking-wider text-[#E2E8F0] flex items-center gap-1.5 font-neo-display leading-none">
+                <span>NEXUS</span>
+                <span className="bg-gradient-to-r from-[#00F5D4] via-[#00FF9D] to-violet-400 bg-clip-text text-transparent">
+                  QUANT
+                </span>
               </div>
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-[#00FF9D] rounded-full border-2 border-[#050811] animate-pulse" />
-          </div>
+          </Link>
 
-          <div className="shrink-0">
-            <div className="font-extrabold text-xs sm:text-sm tracking-wider text-[#E2E8F0] flex items-center gap-1.5 font-neo-display leading-none">
-              <span>NEXUS</span>
-              <span className="bg-gradient-to-r from-[#00F5D4] via-[#00FF9D] to-violet-400 bg-clip-text text-transparent">
-                QUANT
-              </span>
-              <span className="neo-hud-badge">
-                [SYS::ONLINE]
-              </span>
-            </div>
-            <div className="text-[8px] text-[#64748B] font-neo-mono tracking-wider flex items-center gap-1 mt-0.5">
-              <span>未来を描き、共に創る</span>
-              <span className="text-[#00F5D4]">•</span>
-              <span>TOKYO 2042 HUD</span>
-            </div>
+          <div className="hidden sm:flex items-center gap-1 border-l border-cyan-500/20 pl-2">
+            <span className="neo-hud-badge text-[9px] py-0.2 px-1">
+              [SYS::ONLINE]
+            </span>
+            <span className="neo-hud-badge text-[9px] py-0.2 px-1">
+              <Radio className="w-2.5 h-2.5 text-[#00F5D4] animate-pulse" />
+              REALTIME
+            </span>
           </div>
-        </Link>
-
-        {/* Status Indicators */}
-        <div className="hidden md:flex items-center gap-1.5 border-l border-cyan-500/20 pl-2 shrink-0">
-          <span className="neo-hud-badge">
-            <Cpu className="w-3 h-3 text-[#00FF9D]" />
-            MATRIX::ACTIVE
-          </span>
-          <span className="neo-hud-badge">
-            <Radio className="w-3 h-3 text-[#00F5D4] animate-pulse" />
-            [FEED::REALTIME]
-          </span>
         </div>
 
-        {/* Symbol Search Form */}
-        <form onSubmit={handleSearchSubmit} className="relative shrink-0">
-          <input
-            type="text"
-            placeholder={lang === 'uk' ? 'Пошук пари...' : 'Search symbol...'}
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="w-32 sm:w-40 pl-7 pr-2 py-1 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] placeholder:text-[#64748B] focus:outline-none focus:border-[#00F5D4] transition-all"
-          />
-          <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2 top-2" />
-        </form>
+        {/* Left Half 2: Search Input & Watchlist Pills */}
+        <div className="flex items-center gap-2 shrink-0 bg-[#090E1C] p-1 rounded-[2px] border border-cyan-500/20">
+          <form onSubmit={handleSearchSubmit} className="relative shrink-0">
+            <input
+              type="text"
+              placeholder={lang === 'uk' ? 'Пошук пари...' : 'Search symbol...'}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-28 sm:w-36 pl-6 pr-2 py-0.5 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-xs font-neo-mono text-[#E2E8F0] placeholder:text-[#64748B] focus:outline-none focus:border-[#00F5D4] transition-all"
+            />
+            <Search className="w-3 h-3 text-[#64748B] absolute left-1.5 top-1.5" />
+          </form>
 
-        {/* Watchlist Pills */}
-        <div className="hidden xl:flex items-center gap-1 bg-[#090E1C] p-0.5 rounded-[2px] border border-cyan-500/20 shrink-0">
-          {watchlist.map((sym) => {
-            const isSelected = selectedSymbol === sym;
-            return (
-              <div
-                key={sym}
-                onClick={() => onSymbolSelect(sym)}
-                className={`group relative flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-xs font-neo-mono font-medium transition-all cursor-pointer whitespace-nowrap ${
-                  isSelected
-                    ? 'bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/40 font-bold shadow-[0_0_8px_rgba(0,245,212,0.2)]'
-                    : 'text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#0F172A]'
-                }`}
-              >
-                <span>{sym}</span>
-
-                <button
-                  onClick={(e) => handleRemovePair(sym, e)}
-                  className="opacity-0 group-hover:opacity-100 text-[#64748B] hover:text-[#FF2A6D] p-0.5 rounded transition-all ml-0.5"
-                  title={`Видалити ${sym}`}
+          <div className="flex items-center gap-1 shrink-0">
+            {watchlist.map((sym) => {
+              const isSelected = selectedSymbol === sym;
+              return (
+                <div
+                  key={sym}
+                  onClick={() => onSymbolSelect(sym)}
+                  className={`group relative flex items-center gap-1 px-2 py-0.5 rounded-[2px] text-[11px] font-neo-mono font-medium transition-all cursor-pointer whitespace-nowrap ${
+                    isSelected
+                      ? 'bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 font-bold shadow-[0_0_8px_rgba(0,245,212,0.2)]'
+                      : 'text-[#94A3B8] hover:text-[#E2E8F0] hover:bg-[#0F172A]'
+                  }`}
                 >
-                  <X className="w-3 h-3" />
-                </button>
-              </div>
-            );
-          })}
+                  <span>{sym}</span>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="p-1 text-[#64748B] hover:text-[#00F5D4] transition-all"
-            title="Додати валютну пару"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
+                  <button
+                    onClick={(e) => handleRemovePair(sym, e)}
+                    className="opacity-0 group-hover:opacity-100 text-[#64748B] hover:text-[#FF2A6D] p-0.5 rounded transition-all ml-0.5"
+                    title={`Видалити ${sym}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="p-1 text-[#64748B] hover:text-[#00F5D4] transition-all rounded hover:bg-[#050811]"
+              title="Додати валютну пару"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -226,7 +219,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
 
             <form onSubmit={handleAddPairSubmit} className="space-y-3">
               <div>
-                <label className="text-[10px] text-[#64748B] block mb-1">СИМВОЛ (НАПР. USD/CAD, SOL/USDT):</label>
+                <label className="text-[10px] text-[#94A3B8] block mb-1">СИМВОЛ (НАПР. USD/CAD, SOL/USDT):</label>
                 <input
                   type="text"
                   autoFocus
@@ -241,7 +234,7 @@ export const TerminalHeader: React.FC<TerminalHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3 py-1 text-xs text-[#64748B] hover:text-[#E2E8F0]"
+                  className="px-3 py-1 text-xs text-[#94A3B8] hover:text-[#E2E8F0]"
                 >
                   СКАСУВАТИ
                 </button>

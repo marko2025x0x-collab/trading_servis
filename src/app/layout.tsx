@@ -5,7 +5,7 @@ import "./globals.css";
 const azeretMono = Azeret_Mono({
   variable: "--font-azeret-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const chakraPetch = Chakra_Petch({
@@ -31,7 +31,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="uk"
       className={`${azeretMono.variable} ${chakraPetch.variable} ${zenOldMincho.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#080b13] text-slate-100 font-sans">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#050811] text-[#E2E8F0] font-neo-mono selection:bg-[#00F5D4] selection:text-[#050811]">
+        {children}
+      </body>
     </html>
   );
 }
