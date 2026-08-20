@@ -2,16 +2,23 @@
 
 import React, { useState } from 'react';
 import { Signal, TradeLockerExecutionResponse } from '@/types';
+import { TradeLockerPosition } from '@/types/tradelocker';
 import { Language, getTranslation } from '@/lib/i18n';
 import { ShieldCheck, CheckCircle2, AlertTriangle, Send, X, Cpu, Activity, Newspaper } from 'lucide-react';
 
 interface SignalDetailModalProps {
   signal: Signal | null;
   onClose: () => void;
+  onAddPosition?: (pos: TradeLockerPosition) => void;
   lang?: Language;
 }
 
-export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, onClose, lang = 'uk' }) => {
+export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({
+  signal,
+  onClose,
+  onAddPosition,
+  lang = 'uk',
+}) => {
   const t = getTranslation(lang);
   const [lotSize, setLotSize] = useState<number>(0.10);
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
@@ -39,6 +46,25 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
 
       const data: TradeLockerExecutionResponse = await res.json();
       setExecutionResult(data);
+
+      if (data.success) {
+        const newPos: TradeLockerPosition = {
+          id: data.orderId || `TL-POS-${Date.now()}`,
+          symbol: signal.symbol,
+          type: signal.direction.toUpperCase() as 'BUY' | 'SELL',
+          volume: lotSize,
+          openPrice: signal.entry,
+          currentPrice: signal.entry,
+          unrealizedPnl: 0.00,
+          stopLoss: signal.sl,
+          takeProfit: signal.tp,
+          openedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          openTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        };
+        if (onAddPosition) {
+          onAddPosition(newPos);
+        }
+      }
     } catch (err) {
       setExecutionResult({
         success: false,
@@ -53,34 +79,34 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
   const isBuy = signal.direction === 'BUY';
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#0f172a] border border-slate-700/80 rounded-xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 bg-[#050811]/90 backdrop-blur-md flex items-center justify-center p-4 font-neo-mono">
+      <div className="bg-[#090E1C] border border-[#00F5D4]/40 rounded-[3px] w-full max-w-2xl overflow-hidden shadow-2xl neo-hud-bracket">
         {/* Header */}
-        <div className="p-4 bg-[#090d16] border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 bg-[#050811] border-b border-cyan-500/20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`px-3 py-1 rounded text-xs font-bold font-mono ${
+              className={`px-3 py-1 rounded-[2px] text-xs font-bold font-mono ${
                 isBuy
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                  : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+                  ? 'bg-[#00FF9D]/15 text-[#00FF9D] border border-[#00FF9D]/40'
+                  : 'bg-[#FF2A6D]/15 text-[#FF2A6D] border border-[#FF2A6D]/40'
               }`}
             >
               {signal.direction} {signal.symbol}
             </div>
-            <span className="text-slate-400 text-xs font-mono">{signal.timeframe} Timeframe</span>
+            <span className="text-[#94A3B8] text-xs font-mono">{signal.timeframe} Timeframe</span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-sky-500/10 border border-sky-500/30 px-2.5 py-1 rounded text-xs">
-              <ShieldCheck className="w-4 h-4 text-sky-400" />
-              <span className="font-mono-num font-bold text-sky-300">
+            <div className="flex items-center gap-1 bg-[#00F5D4]/10 border border-[#00F5D4]/30 px-2.5 py-1 rounded-[2px] text-xs">
+              <ShieldCheck className="w-4 h-4 text-[#00F5D4]" />
+              <span className="font-mono-num font-bold text-[#00F5D4]">
                 {signal.confluence_score}% {t.confluenceScore}
               </span>
             </div>
 
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-slate-200 transition-colors p-1 rounded-md hover:bg-slate-800"
+              className="text-[#94A3B8] hover:text-[#E2E8F0] transition-colors p-1 rounded hover:bg-[#0F172A]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -90,55 +116,55 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
         {/* Body */}
         <div className="p-5 space-y-5 max-h-[80vh] overflow-y-auto">
           {/* Signal Entry SL TP Banner */}
-          <div className="grid grid-cols-3 gap-3 p-3.5 bg-[#090d16] border border-slate-800 rounded-lg text-center font-mono-num">
+          <div className="grid grid-cols-3 gap-3 p-3.5 bg-[#050811] border border-cyan-500/20 rounded-[2px] text-center font-mono-num">
             <div>
-              <div className="text-xs text-slate-400 mb-1">{t.entry}</div>
-              <div className="text-lg font-bold text-slate-100">{signal.entry}</div>
+              <div className="text-xs text-[#94A3B8] mb-1">{t.entry}</div>
+              <div className="text-lg font-extrabold text-[#00F5D4]">{signal.entry}</div>
             </div>
             <div>
-              <div className="text-xs text-rose-400 mb-1">{t.stopLoss}</div>
-              <div className="text-lg font-bold text-rose-400">{signal.sl}</div>
+              <div className="text-xs text-[#FF2A6D] mb-1">{t.stopLoss}</div>
+              <div className="text-lg font-extrabold text-[#FF2A6D]">{signal.sl}</div>
             </div>
             <div>
-              <div className="text-xs text-emerald-400 mb-1">{t.takeProfit}</div>
-              <div className="text-lg font-bold text-emerald-400">{signal.tp}</div>
+              <div className="text-xs text-[#00FF9D] mb-1">{t.takeProfit}</div>
+              <div className="text-lg font-extrabold text-[#00FF9D]">{signal.tp}</div>
             </div>
           </div>
 
           {/* Breakdown */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#94A3B8] font-mono">
               {lang === 'uk' ? 'Фактори конфлюенції' : 'Confluence Factors Breakdown'}
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
-              <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg flex items-start gap-3">
-                <Cpu className="w-4 h-4 text-sky-400 mt-0.5" />
+              <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] flex items-start gap-3">
+                <Cpu className="w-4 h-4 text-[#00F5D4] mt-0.5" />
                 <div>
-                  <div className="font-semibold text-slate-200">{lang === 'uk' ? 'Свічковий паттерн' : 'Candlestick Pattern'}</div>
-                  <div className="text-slate-400 mt-0.5">
-                    Pattern: <span className="text-sky-300 font-mono">{signal.pattern_detected}</span>
+                  <div className="font-semibold text-[#E2E8F0]">{lang === 'uk' ? 'Свічковий паттерн' : 'Candlestick Pattern'}</div>
+                  <div className="text-[#94A3B8] mt-0.5">
+                    Pattern: <span className="text-[#00F5D4] font-mono">{signal.pattern_detected}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg flex items-start gap-3">
-                <Activity className="w-4 h-4 text-purple-400 mt-0.5" />
+              <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] flex items-start gap-3">
+                <Activity className="w-4 h-4 text-violet-400 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-slate-200">Smart Money Concepts</div>
+                  <div className="font-semibold text-[#E2E8F0]">Smart Money Concepts</div>
                   <div className="flex gap-2 mt-1">
                     {signal.smc_confluence.fvg_detected && (
-                      <span className="bg-indigo-950 text-indigo-300 border border-indigo-800/40 px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="neo-hud-badge">
                         FVG
                       </span>
                     )}
                     {signal.smc_confluence.bos_detected && (
-                      <span className="bg-purple-950 text-purple-300 border border-purple-800/40 px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="neo-hud-badge">
                         BOS
                       </span>
                     )}
                     {signal.smc_confluence.liquidity_sweep && (
-                      <span className="bg-emerald-950 text-emerald-300 border border-emerald-800/40 px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="neo-hud-badge bg-emerald-500/20 text-[#00FF9D] border-[#00FF9D]/40">
                         Sweep
                       </span>
                     )}
@@ -146,21 +172,21 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
                 </div>
               </div>
 
-              <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg flex items-start gap-3">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 mt-0.5" />
+              <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] flex items-start gap-3">
+                <ShieldCheck className="w-4 h-4 text-[#00FF9D] mt-0.5" />
                 <div>
-                  <div className="font-semibold text-slate-200">{lang === 'uk' ? 'Квант метрики' : 'Quant Metrics'}</div>
-                  <div className="text-slate-400 font-mono mt-0.5">
+                  <div className="font-semibold text-[#E2E8F0]">{lang === 'uk' ? 'Квант метрики' : 'Quant Metrics'}</div>
+                  <div className="text-[#94A3B8] font-mono mt-0.5">
                     Z-Score: {signal.quant_confluence.z_score} | ATR: {signal.quant_confluence.atr}
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#111827] border border-slate-800 rounded-lg flex items-start gap-3">
+              <div className="p-3 bg-[#050811] border border-cyan-500/20 rounded-[2px] flex items-start gap-3">
                 <Newspaper className="w-4 h-4 text-amber-400 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-slate-200">{t.fundamentalRadar}</div>
-                  <div className="text-emerald-400 mt-0.5 font-medium flex items-center gap-1">
+                  <div className="font-semibold text-[#E2E8F0]">{t.fundamentalRadar}</div>
+                  <div className="text-[#00FF9D] mt-0.5 font-medium flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'uk' ? 'Новинний буфер чистий' : 'News buffer clear'}
                   </div>
                 </div>
@@ -169,13 +195,14 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
           </div>
 
           {/* TradeLocker Execution Box */}
-          <div className="p-4 bg-[#090d16] border border-slate-800 rounded-lg space-y-3 font-mono">
+          <div className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[3px] space-y-3 font-mono">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                TradeLocker Execution Bridge
+              <div className="text-xs font-extrabold text-[#E2E8F0] uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#00FF9D] animate-pulse" />
+                TradeLocker REST API Execution Bridge
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-xs text-slate-400">{t.lotSize}:</label>
+                <label className="text-xs text-[#94A3B8] font-bold">{t.lotSize}:</label>
                 <input
                   type="number"
                   step="0.01"
@@ -183,7 +210,7 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
                   max="10.0"
                   value={lotSize}
                   onChange={(e) => setLotSize(parseFloat(e.target.value) || 0.1)}
-                  className="w-20 px-2 py-1 bg-[#111827] border border-slate-700 rounded text-xs font-mono text-center text-slate-200 focus:outline-none focus:border-sky-500"
+                  className="w-20 px-2 py-1 bg-[#090E1C] border border-cyan-500/40 rounded-[2px] text-xs font-mono text-center text-[#00F5D4] font-extrabold focus:outline-none focus:border-[#00F5D4]"
                 />
               </div>
             </div>
@@ -191,32 +218,32 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({ signal, on
             <button
               onClick={handleExecuteTradeLocker}
               disabled={isExecuting}
-              className={`w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg ${
+              className={`w-full py-3 rounded-[2px] font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-lg uppercase tracking-wider ${
                 isBuy
-                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/40'
-                  : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/40'
+                  ? 'bg-[#00FF9D] hover:bg-[#00F5D4] text-[#050811] shadow-[#00FF9D]/20'
+                  : 'bg-[#FF2A6D] hover:bg-rose-500 text-white shadow-[#FF2A6D]/20'
               } disabled:opacity-50`}
             >
               <Send className="w-4 h-4" />
               {isExecuting
                 ? t.routingOrder
-                : `${t.executeTrade} (${lotSize} LOTS)`}
+                : `[⚡ 1-CLICK TRADELOCKER EXECUTE] (${lotSize} LOTS)`}
             </button>
 
             {executionResult && (
               <div
-                className={`p-3 rounded text-xs border ${
+                className={`p-3 rounded-[2px] text-xs border ${
                   executionResult.success
-                    ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-                    : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
+                    ? 'bg-[#00FF9D]/15 border-[#00FF9D]/40 text-[#00FF9D]'
+                    : 'bg-[#FF2A6D]/15 border-[#FF2A6D]/40 text-[#FF2A6D]'
                 }`}
               >
-                <div className="font-semibold flex items-center gap-1.5">
+                <div className="font-bold flex items-center gap-1.5">
                   {executionResult.success ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                   {executionResult.message}
                 </div>
                 {executionResult.orderId && (
-                  <div className="mt-1 font-mono text-[11px] text-slate-400">
+                  <div className="mt-1 font-mono text-[11px] text-[#94A3B8]">
                     TradeLocker Order ID: {executionResult.orderId}
                   </div>
                 )}

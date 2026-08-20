@@ -162,6 +162,27 @@ export default function ProDashboardPage() {
     setCandles(data);
   }, [symbol, generateMarketData]);
 
+  // Sync open positions with TradeLocker REST API
+  const fetchPositions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/tradelocker/positions');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.positions) && data.positions.length > 0) {
+          setPositions(data.positions);
+        }
+      }
+    } catch (e) {
+      console.warn('TradeLocker positions sync warning:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPositions();
+    const interval = setInterval(fetchPositions, 5000);
+    return () => clearInterval(interval);
+  }, [fetchPositions]);
+
   // Handle live scan matrix evaluation
   const handleScanMarket = async () => {
     setIsScanning(true);
@@ -216,12 +237,17 @@ export default function ProDashboardPage() {
     }
   };
 
-  const handleClosePosition = (id: string) => {
-    setPositions(positions.filter((p) => p.id !== id));
+  const handleClosePosition = async (id: string) => {
+    try {
+      await fetch(`/api/tradelocker/positions?id=${id}`, { method: 'DELETE' });
+    } catch (e) {
+      console.error(e);
+    }
+    setPositions((prev) => prev.filter((p) => p.id !== id));
   };
 
   const handleAddPosition = (pos: TradeLockerPosition) => {
-    setPositions([pos, ...positions]);
+    setPositions((prev) => [pos, ...prev]);
   };
 
   const quantMetrics = analyzeQuant(candles);
@@ -289,8 +315,12 @@ export default function ProDashboardPage() {
         <QuantMetricsPanel quant={quantMetrics} symbol={symbol} lang={lang} />
       </main>
 
-      {/* Feature Modals */}
-      <SignalDetailModal signal={selectedSignal} onClose={() => setSelectedSignal(null)} lang={lang} />
+      <SignalDetailModal
+        signal={selectedSignal}
+        onClose={() => setSelectedSignal(null)}
+        onAddPosition={handleAddPosition}
+        lang={lang}
+      />
       <TraderJournalModal isOpen={isJournalOpen} onClose={() => setIsJournalOpen(false)} lang={lang} />
       <ArbitrageScannerModal isOpen={isArbitrageOpen} onClose={() => setIsArbitrageOpen(false)} lang={lang} />
       <TopOpportunitiesModal

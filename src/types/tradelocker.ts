@@ -22,4 +22,5 @@ export interface TradeLockerPosition {
   takeProfit?: number;
   unrealizedPnl: number;
   openedAt: string;
+  openTime?: string;
 }
