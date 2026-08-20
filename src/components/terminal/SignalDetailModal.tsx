@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { Signal, TradeLockerExecutionResponse } from '@/types';
 import { TradeLockerPosition } from '@/types/tradelocker';
+import { JournalTrade } from '@/types/journal';
+import { appendJournalTrade } from '@/lib/journal/storage';
 import { Language, getTranslation } from '@/lib/i18n';
 import { ShieldCheck, CheckCircle2, AlertTriangle, Send, X, Cpu, Activity, Newspaper } from 'lucide-react';
 
@@ -64,6 +66,35 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({
         if (onAddPosition) {
           onAddPosition(newPos);
         }
+
+        // Auto-log every real execution to the trader journal so the AI optimizer
+        // can learn from actual outcomes instead of manually-entered guesses.
+        const tags: string[] = [];
+        if (signal.pattern_detected !== 'NONE') tags.push(signal.pattern_detected);
+        if (signal.smc_confluence.fvg_detected) tags.push('FVG');
+        if (signal.smc_confluence.bos_detected) tags.push('BOS');
+        if (signal.smc_confluence.liquidity_sweep) tags.push('LiquiditySweep');
+        if (signal.smc_confluence.choch_detected) tags.push('CHoCH');
+        if (Math.abs(signal.quant_confluence.z_score) > 1.8) tags.push('Z-Score');
+        if (tags.length === 0) tags.push('UNTAGGED');
+
+        const journalEntry: JournalTrade = {
+          id: newPos.id,
+          symbol: signal.symbol,
+          direction: signal.direction,
+          entryPrice: signal.entry,
+          stopLoss: signal.sl,
+          takeProfit: signal.tp,
+          lotSize,
+          status: 'OPEN',
+          entryReason: `Confluence ${signal.confluence_score}% — ${signal.pattern_detected} | Z-Score ${signal.quant_confluence.z_score} | ${signal.news_filter_passed ? 'news clear' : 'news risk'}`,
+          timeframe: signal.timeframe,
+          confluenceScore: signal.confluence_score,
+          winProbability: signal.confluence_score,
+          tags,
+          createdAt: new Date().toISOString(),
+        };
+        appendJournalTrade(journalEntry);
       }
     } catch (err) {
       setExecutionResult({
@@ -186,8 +217,20 @@ export const SignalDetailModal: React.FC<SignalDetailModalProps> = ({
                 <Newspaper className="w-4 h-4 text-amber-400 mt-0.5" />
                 <div>
                   <div className="font-semibold text-[#E2E8F0]">{t.fundamentalRadar}</div>
-                  <div className="text-[#00FF9D] mt-0.5 font-medium flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'uk' ? 'Новинний буфер чистий' : 'News buffer clear'}
+                  <div
+                    className={`mt-0.5 font-medium flex items-center gap-1 ${
+                      signal.news_filter_passed ? 'text-[#00FF9D]' : 'text-[#FF2A6D]'
+                    }`}
+                  >
+                    {signal.news_filter_passed ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'uk' ? 'Новинний буфер чистий' : 'News buffer clear'}
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-3.5 h-3.5" /> {lang === 'uk' ? 'Ризик новин поруч' : 'News risk nearby'}
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

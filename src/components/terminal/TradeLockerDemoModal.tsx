@@ -67,6 +67,8 @@ export const TradeLockerDemoModal: React.FC<TradeLockerDemoModalProps> = ({
       if (savedAcc) {
         try {
           const parsed = JSON.parse(savedAcc);
+          // Reading localStorage must happen post-mount to avoid SSR/client hydration mismatch.
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setAccount(parsed);
           if (parsed.accountId) setAccountIdInput(parsed.accountId);
           if (parsed.server) setServer(parsed.server);

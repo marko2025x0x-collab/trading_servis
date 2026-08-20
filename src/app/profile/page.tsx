@@ -62,6 +62,7 @@ function ProfileContent() {
       document.cookie.includes('user_subscription_status=pro') ||
       document.cookie.includes('user_subscription_status=enterprise');
     if (hasProCookie) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubscriptionTier('PRO');
     }
   }, []);
@@ -317,7 +318,7 @@ function ProfileContent() {
 
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">ІМ'Я ТРЕЙДЕРА</label>
+                    <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">ІМ&apos;Я ТРЕЙДЕРА</label>
                     <input
                       type="text"
                       value={userName}
@@ -403,7 +404,7 @@ function ProfileContent() {
                       <span className="text-[#00F5D4] font-bold">Chrome (Linux x86_64) • АКТИВНА ЗАРАЗ</span>
                     </div>
                     <div className="text-[10px] text-[#64748B]">
-                      IP-адреса: 185.220.101.45 (Захищене Supabase SSL з'єднання)
+                      Захищене SSL з&apos;єднання через Supabase Auth (IP не відстежується)
                     </div>
                   </div>
                 </div>
@@ -620,7 +621,7 @@ function ProfileContent() {
               <form onSubmit={handleEmailAuthSubmit} className="space-y-4">
                 {authMode === 'register' && (
                   <div>
-                    <label className="text-[10px] text-[#94A3B8] block mb-1">ІМ'Я ТРЕЙДЕРА</label>
+                    <label className="text-[10px] text-[#94A3B8] block mb-1">ІМ&apos;Я ТРЕЙДЕРА</label>
                     <input
                       type="text"
                       required

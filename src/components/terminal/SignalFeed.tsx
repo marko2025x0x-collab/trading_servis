@@ -11,6 +11,7 @@ interface SignalFeedProps {
   onSelectSignal: (sig: Signal) => void;
   onTriggerScan: () => void;
   isScanning: boolean;
+  scanMessage?: string | null;
   lang?: Language;
 }
 
@@ -20,6 +21,7 @@ export const SignalFeed: React.FC<SignalFeedProps> = ({
   onSelectSignal,
   onTriggerScan,
   isScanning,
+  scanMessage,
   lang = 'uk',
 }) => {
   const t = getTranslation(lang);
@@ -53,6 +55,12 @@ export const SignalFeed: React.FC<SignalFeedProps> = ({
           {isScanning ? t.scanning : t.scanMarket}
         </button>
       </div>
+
+      {scanMessage && (
+        <div className="px-3 py-2 bg-[#FFB800]/10 border-b border-[#FFB800]/25 text-[#FFB800] text-[11px] font-neo-mono">
+          [SCAN::RESULT] {scanMessage}
+        </div>
+      )}
 
       {/* Signal Items List */}
       <div className="flex-1 overflow-y-auto p-2 space-y-2">

@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { QuantAnalysisResult } from '@/lib/analytics/quant';
-import { DYNAMIC_SYMBOL_NEWS_FEED, getSymbolFundamentalNews } from '@/lib/analytics/newsFilter';
+import { EconomicCalendarEvent } from '@/lib/news/finnhub';
 import { Language, getTranslation } from '@/lib/i18n';
 import { Gauge, Flame, Newspaper, TrendingUp, TrendingDown } from 'lucide-react';
 
@@ -10,12 +10,47 @@ interface QuantMetricsPanelProps {
   quant: QuantAnalysisResult;
   symbol: string;
   lang?: Language;
+  dataSource?: 'LIVE' | 'SIMULATED' | null;
 }
 
-export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, symbol, lang = 'uk' }) => {
+export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, symbol, lang = 'uk', dataSource }) => {
   const t = getTranslation(lang);
   const zAbs = Math.min(3, Math.abs(quant.zScore));
   const zPercentage = (zAbs / 3) * 100;
+
+  const [nextEvent, setNextEvent] = useState<EconomicCalendarEvent | null>(null);
+  const [newsRisk, setNewsRisk] = useState<'SAFE' | 'RISK' | 'UNKNOWN'>('UNKNOWN');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/news/calendar?symbol=${encodeURIComponent(symbol)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        const events: EconomicCalendarEvent[] = data.events || [];
+        if (data.source !== 'LIVE') {
+          setNewsRisk('UNKNOWN');
+          setNextEvent(null);
+          return;
+        }
+        const now = Date.now();
+        const upcoming = events.find((e) => new Date(e.scheduledAt).getTime() >= now) || events[0] || null;
+        setNextEvent(upcoming);
+        const hasImminentHighImpact = events.some(
+          (e) => e.impact === 'HIGH' && Math.abs(new Date(e.scheduledAt).getTime() - now) <= 30 * 60 * 1000
+        );
+        setNewsRisk(hasImminentHighImpact ? 'RISK' : 'SAFE');
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setNewsRisk('UNKNOWN');
+          setNextEvent(null);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol]);
 
   return (
     <div className="w-full neo-panel rounded-[3px] p-3.5 space-y-3 shadow-xl neo-hud-bracket font-neo-mono shrink-0">
@@ -25,8 +60,18 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
           <h3 className="font-extrabold text-[#E2E8F0] text-xs tracking-wider uppercase flex items-center gap-2 font-neo-display">
             <span>{t.quantMetricsTitle}</span>
             <span className="neo-hud-badge">
-              // QUANT RADAR
+              {'// QUANT RADAR'}
             </span>
+            {dataSource && (
+              <span
+                className={`neo-hud-badge ${
+                  dataSource === 'LIVE' ? '!text-[#00FF9D] !border-[#00FF9D]/40' : '!text-[#FFB800] !border-[#FFB800]/40'
+                }`}
+                title={dataSource === 'SIMULATED' ? 'TWELVE_DATA_API_KEY не налаштовано — дані симульовані' : 'Twelve Data live feed'}
+              >
+                [DATA::{dataSource}]
+              </span>
+            )}
           </h3>
         </div>
         <span className="text-[10px] text-[#94A3B8] font-mono-num">{t.calculatedFor} [{symbol}]</span>
@@ -95,15 +140,19 @@ export const QuantMetricsPanel: React.FC<QuantMetricsPanelProps> = ({ quant, sym
             <span className="text-[#94A3B8] font-medium flex items-center gap-1">
               <Newspaper className="w-3.5 h-3.5 text-[#00F5D4]" /> {t.fundamentalRadar}
             </span>
-            <span className="neo-hud-badge">
-              {t.safe}
+            <span
+              className={`neo-hud-badge ${
+                newsRisk === 'RISK' ? '!text-[#FF2A6D] !border-[#FF2A6D]/40' : ''
+              }`}
+            >
+              {newsRisk === 'RISK' ? t.risk : newsRisk === 'SAFE' ? t.safe : 'N/A'}
             </span>
           </div>
           <div className="text-xs text-[#E2E8F0] truncate font-bold">
-            {getSymbolFundamentalNews(symbol)[0]?.title || DYNAMIC_SYMBOL_NEWS_FEED[0].title}
+            {nextEvent?.title || 'Немає найближчих подій'}
           </div>
           <div className="text-[9px] text-[#FFB800] font-mono-num font-bold">
-            {getSymbolFundamentalNews(symbol)[0]?.currency || 'USD'} • High Impact
+            {nextEvent ? `${nextEvent.currency} • ${nextEvent.impact} IMPACT` : '—'}
           </div>
         </div>
       </div>

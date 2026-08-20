@@ -59,6 +59,7 @@ export default function LoginPage() {
           }
         }
         // If enabled or ok, proceed with full OAuth redirect
+        // eslint-disable-next-line react-hooks/immutability -- browser navigation, not React state
         window.location.href = data.url;
       }
     } catch {

@@ -79,7 +79,7 @@ export default function PaywallPage() {
         {/* Top Status Badge */}
         <div className="neo-hud-badge">
           <Lock className="w-3.5 h-3.5 text-[#FFB800]" />
-          // INSTITUTIONAL QUANT SUITE & TRADELOCKER ROUTER
+          {'// INSTITUTIONAL QUANT SUITE & TRADELOCKER ROUTER'}
         </div>
 
         {/* Hero Title */}
@@ -224,7 +224,7 @@ export default function PaywallPage() {
         <div className="w-full max-w-4xl pt-6 space-y-3 font-neo-mono text-xs">
           <div className="text-left font-bold text-[#E2E8F0] uppercase tracking-wider flex items-center gap-2">
             <Layers className="w-4 h-4 text-[#00F5D4]" />
-            // МАТРИЦЯ ПОРІВНЯННЯ ТАРИФІВ
+            {'// МАТРИЦЯ ПОРІВНЯННЯ ТАРИФІВ'}
           </div>
 
           <div className="neo-panel rounded-[3px] overflow-x-auto border border-cyan-500/20 neo-hud-bracket">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Language, getTranslation } from '@/lib/i18n';
+import { Language } from '@/lib/i18n';
 import {
   User,
   X,
@@ -34,7 +34,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onLanguageToggle,
   onOpenTradeLocker,
 }) => {
-  const t = getTranslation(lang);
   const [activeTab, setActiveTab] = useState<'profile' | 'exchanges' | 'subscription' | 'auth'>('profile');
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'reset'>('login');
 
@@ -60,6 +59,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     // Read subscription cookie
     const hasProCookie = document.cookie.includes('user_subscription_status=pro') || document.cookie.includes('user_subscription_status=enterprise');
     if (hasProCookie) {
+      // Syncing React state with the browser's cookie jar (external system) on mount.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSubscriptionTier('PRO');
     }
   }, []);
@@ -88,10 +89,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       if (error) {
         setAuthFeedback({ type: 'error', message: `Помилка Google Auth: ${error.message}` });
       }
-    } catch {
+    } catch (err) {
       setAuthFeedback({
-        type: 'success',
-        message: 'Авторизація через Google ініційована успішно!',
+        type: 'error',
+        message: `Помилка Google Auth: ${err instanceof Error ? err.message : 'невідома помилка'}`,
       });
     }
   };
@@ -117,10 +118,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             message: `Інструкції зі скидання пароля надіслано на пошту ${userEmail}!`,
           });
         }
-      } catch {
+      } catch (err) {
         setAuthFeedback({
-          type: 'success',
-          message: `Інструкції зі скидання пароля надіслано на пошту ${userEmail}!`,
+          type: 'error',
+          message: err instanceof Error ? err.message : 'Не вдалося надіслати інструкції зі скидання пароля.',
         });
       }
       return;
@@ -142,10 +143,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             message: `Акаунт ${userEmail} успішно зареєстровано в Supabase!`,
           });
         }
-      } catch {
+      } catch (err) {
         setAuthFeedback({
-          type: 'success',
-          message: `Акаунт ${userEmail} зареєстровано успішно!`,
+          type: 'error',
+          message: err instanceof Error ? err.message : `Не вдалося зареєструвати акаунт ${userEmail}.`,
         });
       }
       return;
@@ -166,10 +167,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           message: 'Успішно увійшли в акаунт!',
         });
       }
-    } catch {
+    } catch (err) {
       setAuthFeedback({
-        type: 'success',
-        message: 'Успішно увійшли в акаунт!',
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Не вдалося увійти в акаунт.',
       });
     }
   };
@@ -309,7 +310,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </h3>
 
                 <div>
-                  <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">ІМ'Я ТРЕЙДЕРА</label>
+                  <label className="text-[#94A3B8] text-[10px] block mb-1 font-bold">ІМ&apos;Я ТРЕЙДЕРА</label>
                   <input
                     type="text"
                     value={userName}
@@ -582,7 +583,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <form onSubmit={handleEmailAuthSubmit} className="space-y-3">
                 {authMode === 'register' && (
                   <div>
-                    <label className="text-[10px] text-[#94A3B8] block mb-1">ІМ'Я ТРЕЙДЕРА</label>
+                    <label className="text-[10px] text-[#94A3B8] block mb-1">ІМ&apos;Я ТРЕЙДЕРА</label>
                     <input
                       type="text"
                       required

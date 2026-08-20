@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { MarketCandle, Signal } from '@/types';
-import { Language, getTranslation } from '@/lib/i18n';
+import { Language } from '@/lib/i18n';
 import { ArrowUpRight, ArrowDownRight, ShieldCheck, Activity } from 'lucide-react';
 
 interface TradingChartProps {
@@ -49,7 +49,6 @@ export const TradingChart: React.FC<TradingChartProps> = ({
   lang = 'uk',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const t = getTranslation(lang);
 
   const tvSymbol = formatTradingViewSymbol(symbol);
   const tvInterval = formatTradingViewInterval(timeframe);
@@ -70,8 +69,9 @@ export const TradingChart: React.FC<TradingChartProps> = ({
     script.src = 'https://s3.tradingview.com/tv.js';
     script.async = true;
     script.onload = () => {
-      if (typeof window !== 'undefined' && (window as any).TradingView) {
-        new (window as any).TradingView.widget({
+      const tv = (window as unknown as { TradingView?: { widget: new (options: Record<string, unknown>) => unknown } }).TradingView;
+      if (typeof window !== 'undefined' && tv) {
+        new tv.widget({
           autosize: true,
           symbol: tvSymbol,
           interval: tvInterval,
@@ -146,7 +146,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({
 
         {activeSignal && (
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-[#64748B]">// ENTRY:</span>
+            <span className="text-[#64748B]">{'// ENTRY:'}</span>
             <span
               className={`font-mono-num font-bold px-2 py-0.5 rounded-[2px] text-[11px] ${
                 activeSignal.direction === 'BUY'

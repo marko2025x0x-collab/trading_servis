@@ -34,6 +34,7 @@ export const ArbitrageScannerModal: React.FC<ArbitrageScannerModalProps> = ({ is
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchOpportunities();
       // Auto refresh spreads every 3 seconds for live real-time feel
       const interval = setInterval(fetchOpportunities, 3000);
@@ -70,7 +71,7 @@ export const ArbitrageScannerModal: React.FC<ArbitrageScannerModalProps> = ({ is
                 </span>
               </h2>
               <p className="text-[10px] text-[#64748B] font-neo-mono">
-                // REAL-TIME SPREAD RADAR & NET PROFIT CALCULATOR
+                {'// REAL-TIME SPREAD RADAR & NET PROFIT CALCULATOR'}
               </p>
             </div>
           </div>

@@ -24,7 +24,7 @@ export interface Signal {
   tp: number;
   confluence_score: number;
   timeframe: Timeframe;
-  pattern_detected: PatternType;
+  pattern_detected: PatternType | 'NONE';
   smc_confluence: {
     fvg_detected: boolean;
     bos_detected: boolean;

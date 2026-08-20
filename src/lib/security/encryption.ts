@@ -1,14 +1,16 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-// Fallback 32-byte secret key if environment variable is not defined
-const MASTER_SECRET = process.env.ENCRYPTION_MASTER_KEY || 'nexus_quant_gdpr_crypto_key_32b_secret!!';
 
 /**
  * Derives a 32-byte key from master secret using SHA-256
  */
 function getDerivedKey(): Buffer {
-  return crypto.createHash('sha256').update(MASTER_SECRET).digest();
+  const masterSecret = process.env.ENCRYPTION_MASTER_KEY;
+  if (!masterSecret) {
+    throw new Error('ENCRYPTION_MASTER_KEY is not set. Refusing to encrypt/decrypt with a default key.');
+  }
+  return crypto.createHash('sha256').update(masterSecret).digest();
 }
 
 export interface EncryptedPayload {

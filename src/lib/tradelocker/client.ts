@@ -43,7 +43,7 @@ export class TradeLockerClient {
 
   constructor() {
     this.baseUrl = process.env.TRADELOCKER_API_URL || 'https://demo-api.tradelocker.com/v2';
-    this.apiKey = process.env.TRADELOCKER_API_KEY || 'tl_live_demo_key_99381';
+    this.apiKey = process.env.TRADELOCKER_API_KEY || '';
     this.accId = process.env.TRADELOCKER_ACCOUNT_ID || '1787179051833048700';
   }
 
@@ -66,18 +66,18 @@ export class TradeLockerClient {
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data.positions)) {
-            return data.positions.map((p: any) => ({
-              id: p.id || `pos-${Date.now()}`,
-              symbol: p.instrument || p.symbol || 'EUR/USD',
-              type: (p.side || 'BUY').toUpperCase() as 'BUY' | 'SELL',
-              volume: parseFloat(p.qty || p.quantity || '0.10'),
-              openPrice: parseFloat(p.avgPrice || p.openPrice || '1.0000'),
-              currentPrice: parseFloat(p.currentPrice || p.markPrice || '1.0000'),
-              unrealizedPnl: parseFloat(p.pnl || p.unrealizedPnl || '0.00'),
-              stopLoss: p.stopLoss ? parseFloat(p.stopLoss) : undefined,
-              takeProfit: p.takeProfit ? parseFloat(p.takeProfit) : undefined,
-              openedAt: p.createdTime || new Date().toISOString(),
-              openTime: p.createdTime || new Date().toISOString(),
+            return data.positions.map((p: Record<string, unknown>) => ({
+              id: String(p.id ?? `pos-${Date.now()}`),
+              symbol: String(p.instrument ?? p.symbol ?? 'EUR/USD'),
+              type: String(p.side ?? 'BUY').toUpperCase() as 'BUY' | 'SELL',
+              volume: parseFloat(String(p.qty ?? p.quantity ?? '0.10')),
+              openPrice: parseFloat(String(p.avgPrice ?? p.openPrice ?? '1.0000')),
+              currentPrice: parseFloat(String(p.currentPrice ?? p.markPrice ?? '1.0000')),
+              unrealizedPnl: parseFloat(String(p.pnl ?? p.unrealizedPnl ?? '0.00')),
+              stopLoss: p.stopLoss !== undefined ? parseFloat(String(p.stopLoss)) : undefined,
+              takeProfit: p.takeProfit !== undefined ? parseFloat(String(p.takeProfit)) : undefined,
+              openedAt: String(p.createdTime ?? new Date().toISOString()),
+              openTime: String(p.createdTime ?? new Date().toISOString()),
             }));
           }
         }

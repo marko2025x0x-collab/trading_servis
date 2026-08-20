@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { JournalTrade } from '@/types/journal';
+import { loadJournalTrades, saveJournalTrades } from '@/lib/journal/storage';
 import {
-  INITIAL_MOCK_JOURNAL_TRADES,
   calculateJournalStats,
   generateAIJournalOptimizations,
+  calculateSharpeRatio,
+  calculateMaxDrawdown,
 } from '@/lib/journal/aiOptimizer';
 import { Language, getTranslation } from '@/lib/i18n';
 import {
@@ -17,8 +19,8 @@ import {
   CheckCircle2,
   Lightbulb,
   Sparkles,
-  Upload,
   BarChart3,
+  Loader2,
 } from 'lucide-react';
 
 interface TraderJournalModalProps {
@@ -27,87 +29,114 @@ interface TraderJournalModalProps {
   lang: Language;
 }
 
-const STORAGE_KEY = 'nexus_quant_trader_journal_v2';
-
-const MOCK_PRO_TRADER_SESSION: JournalTrade[] = [
-  {
-    id: `pro-session-1`,
-    symbol: 'BTC/USD',
-    direction: 'BUY',
-    entryPrice: 64200,
-    exitPrice: 66800,
-    stopLoss: 63500,
-    takeProfit: 66800,
-    lotSize: 1.0,
-    pnl: 2600.00,
-    status: 'CLOSED_WIN',
-    entryReason: 'SMC Institutional Liquidity Sweep at 64k + Z-Score -2.4',
-    exitReason: 'Take Profit Target Reached',
-    timeframe: '15m',
-    confluenceScore: 96,
-    winProbability: 92,
-    tags: ['Institutional', 'ProQuant'],
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    closedAt: new Date(Date.now() - 80000000).toISOString(),
-  },
-  {
-    id: `pro-session-2`,
-    symbol: 'XAU/USD',
-    direction: 'BUY',
-    entryPrice: 2480.50,
-    exitPrice: 2505.00,
-    stopLoss: 2470.00,
-    takeProfit: 2505.00,
-    lotSize: 2.0,
-    pnl: 4900.00,
-    status: 'CLOSED_WIN',
-    entryReason: 'Gold FVG Demand Zone Bounce + US CPI News Filter Clear',
-    exitReason: 'Take Profit Target Reached',
-    timeframe: '1h',
-    confluenceScore: 98,
-    winProbability: 95,
-    tags: ['Gold', 'ProQuant'],
-    createdAt: new Date(Date.now() - 172800000).toISOString(),
-    closedAt: new Date(Date.now() - 160000000).toISOString(),
-  },
-];
-
 export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, onClose, lang }) => {
   const t = getTranslation(lang);
   const [trades, setTrades] = useState<JournalTrade[]>([]);
   const [activeTab, setActiveTab] = useState<'LOG' | 'AI_OPTIMIZER' | 'ANALYTICS'>('LOG');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [closingId, setClosingId] = useState<string | null>(null);
 
-  // New trade form fields
+  // New (manually self-reported) trade form fields
   const [newSymbol, setNewSymbol] = useState('EUR/USD');
   const [newDirection, setNewDirection] = useState<'BUY' | 'SELL'>('BUY');
-  const [newEntry, setNewEntry] = useState('1.0854');
-  const [newExit, setNewExit] = useState('1.0890');
-  const [newPnl, setNewPnl] = useState('180.00');
-  const [newReason, setNewReason] = useState('SMC FVG + Bullish Pin Bar on 15M');
+  const [newEntry, setNewEntry] = useState('');
+  const [newExit, setNewExit] = useState('');
+  const [newPnl, setNewPnl] = useState('');
+  const [newReason, setNewReason] = useState('');
   const [newTimeframe, setNewTimeframe] = useState('15m');
 
-  // Load trades from localStorage or fallback to INITIAL_MOCK_JOURNAL_TRADES
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          setTrades(JSON.parse(saved));
-        } catch {
-          setTrades(INITIAL_MOCK_JOURNAL_TRADES);
-        }
-      } else {
-        setTrades(INITIAL_MOCK_JOURNAL_TRADES);
-      }
-    }
-  }, []);
-
-  // Save to localStorage whenever trades list changes
   const updateTrades = (updatedList: JournalTrade[]) => {
     setTrades(updatedList);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    saveJournalTrades(updatedList);
+  };
+
+  // Re-sync from storage every time the modal opens, so trades auto-logged
+  // elsewhere (e.g. a signal execution) while the journal was closed show up.
+  useEffect(() => {
+    if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTrades(loadJournalTrades());
+    }
+  }, [isOpen]);
+
+  // Manually log a real trade the user took (e.g. off-platform) — self-reported, not algorithmic.
+  const handleAddTrade = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pnlVal = parseFloat(newPnl) || 0;
+    const entryVal = parseFloat(newEntry);
+    const exitVal = parseFloat(newExit);
+    if (isNaN(entryVal) || isNaN(exitVal)) return;
+
+    const newTrade: JournalTrade = {
+      id: `trd-manual-${Date.now()}`,
+      symbol: newSymbol.toUpperCase().trim(),
+      direction: newDirection,
+      entryPrice: entryVal,
+      exitPrice: exitVal,
+      stopLoss: parseFloat((newDirection === 'BUY' ? entryVal - Math.abs(entryVal - exitVal) : entryVal + Math.abs(entryVal - exitVal)).toFixed(5)),
+      takeProfit: exitVal,
+      lotSize: 0.5,
+      pnl: pnlVal,
+      status: pnlVal >= 0 ? 'CLOSED_WIN' : 'CLOSED_LOSS',
+      entryReason: newReason || (lang === 'uk' ? 'Вручну додана угода (поза терміналом)' : 'Manually logged trade (off-platform)'),
+      exitReason: pnlVal >= 0 ? (lang === 'uk' ? 'Прибуток' : 'Take profit') : (lang === 'uk' ? 'Збиток' : 'Stop loss'),
+      timeframe: newTimeframe,
+      confluenceScore: 0,
+      winProbability: 0,
+      tags: ['MANUAL'],
+      createdAt: new Date().toISOString(),
+      closedAt: new Date().toISOString(),
+    };
+
+    updateTrades([newTrade, ...trades]);
+    setShowAddForm(false);
+    setNewReason('');
+    setNewPnl('');
+    setNewEntry('');
+    setNewExit('');
+  };
+
+  // Close an OPEN (auto-logged) trade using a real live quote instead of a manually-typed PnL.
+  const handleCloseTrade = useCallback(
+    async (trade: JournalTrade) => {
+      setClosingId(trade.id);
+      try {
+        const res = await fetch(`/api/market-data/quote?symbol=${encodeURIComponent(trade.symbol)}`);
+        const data = await res.json();
+        const exitPrice: number = data.price ?? trade.entryPrice;
+
+        const diff = trade.direction === 'BUY' ? exitPrice - trade.entryPrice : trade.entryPrice - exitPrice;
+        const isForexPair = !/BTC|ETH|SOL|XAU|NVDA/.test(trade.symbol);
+        const multiplier = isForexPair ? 100000 : 1;
+        const pnl = parseFloat((diff * multiplier * trade.lotSize).toFixed(2));
+
+        const updated = trades.map((tr) =>
+          tr.id === trade.id
+            ? {
+                ...tr,
+                exitPrice,
+                pnl,
+                status: (pnl >= 0 ? 'CLOSED_WIN' : 'CLOSED_LOSS') as JournalTrade['status'],
+                exitReason: pnl >= 0 ? (lang === 'uk' ? 'Закрито вручну з прибутком' : 'Manually closed in profit') : (lang === 'uk' ? 'Закрито вручну зі збитком' : 'Manually closed at a loss'),
+                closedAt: new Date().toISOString(),
+              }
+            : tr
+        );
+        updateTrades(updated);
+      } catch {
+        // If the live quote fails, leave the trade OPEN rather than fabricating an outcome.
+      } finally {
+        setClosingId(null);
+      }
+    },
+    [trades, lang]
+  );
+
+  // Delete trade handler
+  const handleDeleteTrade = (tradeId: string) => {
+    if (confirm(t.confirmDelete)) {
+      const filtered = trades.filter((tr) => tr.id !== tradeId);
+      updateTrades(filtered);
     }
   };
 
@@ -116,55 +145,8 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
   // Dynamic statistics recalculation
   const stats = calculateJournalStats(trades);
   const aiAdvice = generateAIJournalOptimizations(trades);
-
-  // Add new trade handler
-  const handleAddTrade = (e: React.FormEvent) => {
-    e.preventDefault();
-    const pnlVal = parseFloat(newPnl) || 0;
-    const entryVal = parseFloat(newEntry) || 1.0854;
-    const exitVal = parseFloat(newExit) || 1.0890;
-
-    const newTrade: JournalTrade = {
-      id: `trd-${Date.now()}`,
-      symbol: newSymbol.toUpperCase().trim(),
-      direction: newDirection,
-      entryPrice: entryVal,
-      exitPrice: exitVal,
-      stopLoss: parseFloat((newDirection === 'BUY' ? entryVal - 0.0035 : entryVal + 0.0035).toFixed(5)),
-      takeProfit: exitVal,
-      lotSize: 0.5,
-      pnl: pnlVal,
-      status: pnlVal >= 0 ? 'CLOSED_WIN' : 'CLOSED_LOSS',
-      entryReason: newReason,
-      exitReason: pnlVal >= 0 ? 'Take Profit Goal Reached' : 'Stop Loss Hit',
-      timeframe: newTimeframe,
-      confluenceScore: 92,
-      winProbability: 89,
-      tags: ['SMC', 'CustomTrade'],
-      createdAt: new Date().toISOString(),
-      closedAt: new Date().toISOString(),
-    };
-
-    updateTrades([newTrade, ...trades]);
-    setShowAddForm(false);
-    setNewReason('SMC FVG + Bullish Pin Bar on 15M');
-    setNewPnl('180.00');
-  };
-
-  // Import Pro Trader Session
-  const handleImportProSession = () => {
-    const combined = [...MOCK_PRO_TRADER_SESSION, ...trades];
-    updateTrades(combined);
-    alert('Успішно імпортовано 2 прибуткові торгові сесії Pro Квант-трейдерів! АІ перенавчено.');
-  };
-
-  // Delete trade handler
-  const handleDeleteTrade = (tradeId: string) => {
-    if (confirm(t.confirmDelete)) {
-      const filtered = trades.filter((t) => t.id !== tradeId);
-      updateTrades(filtered);
-    }
-  };
+  const sharpe = calculateSharpeRatio(trades);
+  const maxDrawdown = calculateMaxDrawdown(trades);
 
   return (
     <div className="fixed inset-0 z-50 bg-[#050811]/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-neo-mono select-none">
@@ -183,27 +165,17 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                 </span>
               </h2>
               <p className="text-[10px] text-[#64748B] font-neo-mono">
-                // QUANTITATIVE TRADE DIARY & AI PATTERN OPTIMIZER
+                {'// QUANTITATIVE TRADE DIARY & AI PATTERN OPTIMIZER'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleImportProSession}
-              className="flex items-center gap-1.5 px-3 py-1 bg-[#00FF9D]/10 hover:bg-[#00FF9D]/20 text-[#00FF9D] border border-[#00FF9D]/30 rounded-[2px] text-xs font-neo-mono font-bold transition-all"
-            >
-              <Upload className="w-3.5 h-3.5 text-[#00FF9D]" />
-              Імпорт Pro Сесії
-            </button>
-
-            <button
-              onClick={onClose}
-              className="text-[#64748B] hover:text-[#E2E8F0] p-1.5 rounded-[2px] hover:bg-[#0F172A] transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-[#64748B] hover:text-[#E2E8F0] p-1.5 rounded-[2px] hover:bg-[#0F172A] transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Dynamic Navigation Tabs */}
@@ -281,12 +253,17 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                 </button>
               </div>
 
-              {/* Add New Trade Form */}
+              {/* Add New (self-reported) Trade Form */}
               {showAddForm && (
                 <form
                   onSubmit={handleAddTrade}
                   className="p-4 bg-[#050811] border border-cyan-500/30 rounded-[2px] space-y-3 font-neo-mono text-xs shadow-xl animate-in zoom-in-95 duration-150 neo-hud-bracket"
                 >
+                  <p className="text-[10px] text-[#64748B]">
+                    {lang === 'uk'
+                      ? 'Для угод, виконаних через термінал, запис у щоденник створюється автоматично. Ця форма — для угод, взятих поза платформою.'
+                      : 'Trades executed through the terminal are logged automatically. This form is for trades taken off-platform.'}
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono-num">
                     <div>
                       <label className="text-[10px] text-[#64748B]">Пара / Символ</label>
@@ -320,6 +297,19 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                       />
                     </div>
                     <div>
+                      <label className="text-[10px] text-[#64748B]">Ціна виходу</label>
+                      <input
+                        type="text"
+                        required
+                        value={newExit}
+                        onChange={(e) => setNewExit(e.target.value)}
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
                       <label className="text-[10px] text-[#64748B]">PnL ($)</label>
                       <input
                         type="text"
@@ -329,13 +319,21 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                         className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] font-bold focus:border-[#00F5D4] focus:outline-none"
                       />
                     </div>
+                    <div>
+                      <label className="text-[10px] text-[#64748B]">Таймфрейм</label>
+                      <input
+                        type="text"
+                        value={newTimeframe}
+                        onChange={(e) => setNewTimeframe(e.target.value)}
+                        className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="text-[10px] text-[#64748B]">Причина входу / Сетап</label>
                     <input
                       type="text"
-                      required
                       value={newReason}
                       onChange={(e) => setNewReason(e.target.value)}
                       className="w-full p-2 bg-[#090E1C] border border-cyan-500/30 rounded-[2px] text-[#E2E8F0] focus:border-[#00F5D4] focus:outline-none"
@@ -359,12 +357,15 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
               ) : (
                 <div className="space-y-2.5 font-mono-num">
                   {trades.map((trd) => {
-                    const isWin = (trd.pnl || 0) >= 0;
+                    const isOpen = trd.status === 'OPEN';
+                    const isWin = !isOpen && (trd.pnl || 0) >= 0;
                     return (
                       <div
                         key={trd.id}
                         className={`p-3.5 rounded-[2px] border transition-all ${
-                          isWin
+                          isOpen
+                            ? 'bg-[#00F5D4]/5 border-[#00F5D4]/30'
+                            : isWin
                             ? 'bg-[#00FF9D]/5 border-[#00FF9D]/30'
                             : 'bg-[#FF2A6D]/5 border-[#FF2A6D]/30'
                         }`}
@@ -382,19 +383,33 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                               {trd.direction}
                             </span>
                             <span className="text-[10px] text-[#64748B] font-mono">{trd.timeframe}</span>
+                            {isOpen && (
+                              <span className="px-1.5 py-0.5 rounded-[2px] text-[9px] font-bold bg-[#00F5D4]/15 text-[#00F5D4] border border-[#00F5D4]/30">
+                                OPEN
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <div className="text-[10px] text-[#64748B]">PnL</div>
-                              <div
-                                className={`font-bold text-sm ${
-                                  isWin ? 'text-[#00FF9D]' : 'text-[#FF2A6D]'
-                                }`}
-                              >
-                                {isWin ? `+$${trd.pnl}` : `-$${Math.abs(trd.pnl || 0)}`}
+                            {!isOpen && (
+                              <div className="text-right">
+                                <div className="text-[10px] text-[#64748B]">PnL</div>
+                                <div className={`font-bold text-sm ${isWin ? 'text-[#00FF9D]' : 'text-[#FF2A6D]'}`}>
+                                  {isWin ? `+$${trd.pnl}` : `-$${Math.abs(trd.pnl || 0)}`}
+                                </div>
                               </div>
-                            </div>
+                            )}
+
+                            {isOpen && (
+                              <button
+                                onClick={() => handleCloseTrade(trd)}
+                                disabled={closingId === trd.id}
+                                className="px-2.5 py-1 text-[10px] font-bold rounded-[2px] bg-[#00F5D4]/10 hover:bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/30 transition-all disabled:opacity-50 flex items-center gap-1"
+                              >
+                                {closingId === trd.id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                {lang === 'uk' ? 'Закрити за ринком' : 'Close at market'}
+                              </button>
+                            )}
 
                             <button
                               onClick={() => handleDeleteTrade(trd.id)}
@@ -435,6 +450,11 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
                     ? `Аналіз показує Win Rate ${stats.winRate}% на основі ${stats.totalTrades} угод. AI обчислив наступні кроки:`
                     : `Analysis shows ${stats.winRate}% Win Rate across ${stats.totalTrades} trades. AI generated the following steps:`}
                 </p>
+                <p className="text-[10px] text-[#64748B] font-mono">
+                  {lang === 'uk'
+                    ? 'Ваги Confluence Matrix автоматично коригуються на основі цієї статистики (потрібно ≥8 закритих угод).'
+                    : 'Confluence Matrix weights auto-adjust based on this statistics (requires ≥8 closed trades).'}
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -474,20 +494,26 @@ export const TraderJournalModal: React.FC<TraderJournalModalProps> = ({ isOpen, 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono-num">
                 <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
                   <div className="text-xs text-[#64748B] uppercase">Очікувана вигода (Expectancy)</div>
-                  <div className="text-2xl font-extrabold text-[#00FF9D] mt-1">+${stats.totalTrades > 0 ? (stats.totalPnL / stats.totalTrades).toFixed(2) : '0.00'}</div>
-                  <div className="text-[10px] text-[#64748B] mt-1">На кожен 1 лот</div>
+                  <div className="text-2xl font-extrabold text-[#00FF9D] mt-1">
+                    {stats.totalTrades > 0 ? `${stats.totalPnL >= 0 ? '+' : ''}$${(stats.totalPnL / stats.totalTrades).toFixed(2)}` : '—'}
+                  </div>
+                  <div className="text-[10px] text-[#64748B] mt-1">На угоду</div>
                 </div>
 
                 <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
-                  <div className="text-xs text-[#64748B] uppercase">Коефіцієнт Шарпа (Sharpe Ratio)</div>
-                  <div className="text-2xl font-extrabold text-[#00F5D4] mt-1">2.41</div>
-                  <div className="text-[10px] text-[#64748B] mt-1">Висока стабільність стратегії</div>
+                  <div className="text-xs text-[#64748B] uppercase">Sharpe-подібний коефіцієнт</div>
+                  <div className="text-2xl font-extrabold text-[#00F5D4] mt-1">{sharpe !== null ? sharpe : '—'}</div>
+                  <div className="text-[10px] text-[#64748B] mt-1">
+                    {sharpe === null ? 'Потрібно ≥3 закритих угод' : 'mean(PnL) / stddev(PnL)'}
+                  </div>
                 </div>
 
                 <div className="p-4 bg-[#090E1C] border border-cyan-500/20 rounded-[2px] text-center">
                   <div className="text-xs text-[#64748B] uppercase">Максимальна просідання (Max DD)</div>
-                  <div className="text-2xl font-extrabold text-[#FF2A6D] mt-1">-3.8%</div>
-                  <div className="text-[10px] text-[#64748B] mt-1">Контрольований ризик</div>
+                  <div className="text-2xl font-extrabold text-[#FF2A6D] mt-1">
+                    {maxDrawdown !== null ? `-${maxDrawdown}%` : '—'}
+                  </div>
+                  <div className="text-[10px] text-[#64748B] mt-1">Від пікового еквіті</div>
                 </div>
               </div>
             </div>

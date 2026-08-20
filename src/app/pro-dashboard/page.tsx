@@ -16,6 +16,17 @@ import { ArbitrageScannerModal } from '@/components/terminal/ArbitrageScannerMod
 import { TopOpportunitiesModal } from '@/components/terminal/TopOpportunitiesModal';
 import { TradeLockerDemoModal } from '@/components/terminal/TradeLockerDemoModal';
 import { analyzeQuant } from '@/lib/analytics/quant';
+import { computeOptimizedWeights } from '@/lib/journal/aiOptimizer';
+import { loadJournalTrades } from '@/lib/journal/storage';
+
+const POLL_INTERVAL_MS: Record<string, number> = {
+  '1m': 15_000,
+  '5m': 30_000,
+  '15m': 60_000,
+  '1h': 5 * 60_000,
+  '4h': 15 * 60_000,
+  '1d': 30 * 60_000,
+};
 
 const INITIAL_HIGH_CONFLUENCE_SIGNALS: Signal[] = [
   {
@@ -103,6 +114,8 @@ export default function ProDashboardPage() {
   const [signals, setSignals] = useState<Signal[]>(INITIAL_HIGH_CONFLUENCE_SIGNALS);
   const [selectedSignal, setSelectedSignal] = useState<Signal | null>(INITIAL_HIGH_CONFLUENCE_SIGNALS[0]);
   const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [scanMessage, setScanMessage] = useState<string | null>(null);
+  const [dataSource, setDataSource] = useState<'LIVE' | 'SIMULATED' | null>(null);
 
   // TradeLocker Demo Positions State
   const [positions, setPositions] = useState<TradeLockerPosition[]>(INITIAL_DEMO_POSITIONS);
@@ -115,52 +128,27 @@ export default function ProDashboardPage() {
 
   const t = getTranslation(lang);
 
-  // Generate realistic candles for any custom symbol
-  const generateMarketData = useCallback((sym: string) => {
-    const list: MarketCandle[] = [];
-    let basePrice = sym.includes('BTC')
-      ? 69379.91
-      : sym.includes('XAU')
-      ? 2485
-      : sym.includes('SOL')
-      ? 142.5
-      : sym.includes('ETH')
-      ? 3450
-      : sym.includes('NVDA')
-      ? 128.4
-      : 1.0854;
-
-    const now = Math.floor(Date.now() / 1000);
-    const step = 15 * 60;
-
-    for (let i = 60; i >= 0; i--) {
-      const timestamp = now - i * step;
-      const vol = basePrice * 0.002;
-      const change = (Math.random() - 0.49) * vol;
-      const open = basePrice;
-      const close = basePrice + change;
-      const high = Math.max(open, close) + Math.random() * vol * 0.4;
-      const low = Math.min(open, close) - Math.random() * vol * 0.4;
-      const volume = Math.floor(Math.random() * 4000 + 1200);
-
-      list.push({
-        timestamp,
-        open: parseFloat(open.toFixed(sym.includes('SOL') || sym.includes('NVDA') ? 2 : sym.includes('BTC') ? 2 : 5)),
-        high: parseFloat(high.toFixed(sym.includes('SOL') || sym.includes('NVDA') ? 2 : sym.includes('BTC') ? 2 : 5)),
-        low: parseFloat(low.toFixed(sym.includes('SOL') || sym.includes('NVDA') ? 2 : sym.includes('BTC') ? 2 : 5)),
-        close: parseFloat(close.toFixed(sym.includes('SOL') || sym.includes('NVDA') ? 2 : sym.includes('BTC') ? 2 : 5)),
-        volume,
-      });
-
-      basePrice = close;
+  // Fetch real candles for the selected symbol+timeframe and keep them fresh
+  const loadCandles = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/market-data/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&count=60`
+      );
+      const data = await res.json();
+      setCandles(data.candles || []);
+      setDataSource(data.source || null);
+    } catch (e) {
+      console.warn('Market data fetch failed:', e);
     }
-    return list;
-  }, []);
+  }, [symbol, timeframe]);
 
   useEffect(() => {
-    const data = generateMarketData(symbol);
-    setCandles(data);
-  }, [symbol, generateMarketData]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadCandles();
+    const intervalMs = POLL_INTERVAL_MS[timeframe] || 60_000;
+    const interval = setInterval(loadCandles, intervalMs);
+    return () => clearInterval(interval);
+  }, [loadCandles, timeframe]);
 
   // Sync open positions with TradeLocker REST API
   const fetchPositions = useCallback(async () => {
@@ -178,6 +166,7 @@ export default function ProDashboardPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPositions();
     const interval = setInterval(fetchPositions, 5000);
     return () => clearInterval(interval);
@@ -187,51 +176,28 @@ export default function ProDashboardPage() {
   const handleScanMarket = async () => {
     setIsScanning(true);
     try {
+      const weights = computeOptimizedWeights(loadJournalTrades());
       const res = await fetch('/api/signals/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol, forceBypassNews: true }),
+        body: JSON.stringify({ symbol, weights }),
       });
 
       const data = await res.json();
       if (data.generatedSignal) {
+        setScanMessage(null);
         setSignals((prev) => [data.generatedSignal, ...prev.filter((s) => s.id !== data.generatedSignal.id)]);
         setSelectedSignal(data.generatedSignal);
       } else {
-        const currentPrice = candles[candles.length - 1]?.close || 69379.91;
-        const isCrypto = symbol.includes('BTC') || symbol.includes('SOL') || symbol.includes('ETH');
-        const slDiff = isCrypto ? currentPrice * 0.02 : 0.0035;
-
-        const mockSig: Signal = {
-          id: `sig-demo-${Date.now()}`,
-          symbol,
-          direction: 'BUY',
-          entry: parseFloat(currentPrice.toFixed(isCrypto ? 2 : 5)),
-          sl: parseFloat((currentPrice - slDiff).toFixed(isCrypto ? 2 : 5)),
-          tp: parseFloat((currentPrice + slDiff * 2.2).toFixed(isCrypto ? 2 : 5)),
-          confluence_score: 96,
-          timeframe,
-          pattern_detected: 'BULLISH_ENGULFING',
-          smc_confluence: {
-            fvg_detected: true,
-            bos_detected: true,
-            choch_detected: true,
-            liquidity_sweep: true,
-          },
-          quant_confluence: {
-            z_score: -2.14,
-            atr: parseFloat(slDiff.toFixed(4)),
-            momentum_score: 92.5,
-          },
-          news_filter_passed: true,
-          active: true,
-          created_at: new Date().toISOString(),
-        };
-        setSignals((prev) => [mockSig, ...prev]);
-        setSelectedSignal(mockSig);
+        setScanMessage(
+          `No confluence: score ${data.confluenceScore ?? '—'}/100 (needs >80). ${
+            data.breakdown?.newsPassed === false ? `News filter: ${data.breakdown.newsReason}.` : ''
+          }`
+        );
       }
     } catch (err) {
       console.error(err);
+      setScanMessage('Scan failed — see console for details.');
     } finally {
       setIsScanning(false);
     }
@@ -306,13 +272,14 @@ export default function ProDashboardPage() {
               onSelectSignal={(sig) => setSelectedSignal(sig)}
               onTriggerScan={handleScanMarket}
               isScanning={isScanning}
+              scanMessage={scanMessage}
               lang={lang}
             />
           </div>
         </div>
 
         {/* Quant Realtime Metrics Panel */}
-        <QuantMetricsPanel quant={quantMetrics} symbol={symbol} lang={lang} />
+        <QuantMetricsPanel quant={quantMetrics} symbol={symbol} lang={lang} dataSource={dataSource} />
       </main>
 
       <SignalDetailModal

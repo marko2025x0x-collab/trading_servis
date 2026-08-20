@@ -59,6 +59,7 @@ export default function RegisterPage() {
           }
         }
         // If enabled or ok, proceed with full OAuth redirect
+        // eslint-disable-next-line react-hooks/immutability -- browser navigation, not React state
         window.location.href = data.url;
       }
     } catch {
@@ -191,7 +192,7 @@ export default function RegisterPage() {
         <form onSubmit={handleEmailSignUp} className="space-y-4">
           <div>
             <label className="text-[10px] text-[#94A3B8] block mb-1 font-bold">
-              ІМ'Я ТА ПРІЗВИЩЕ:
+              ІМ&apos;Я ТА ПРІЗВИЩЕ:
             </label>
             <div className="relative">
               <input

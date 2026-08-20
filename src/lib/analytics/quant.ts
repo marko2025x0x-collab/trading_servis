@@ -60,7 +60,7 @@ export function analyzeQuant(candles: MarketCandle[], period = 20): QuantAnalysi
   const roc = ((currentPrice - firstPrice) / firstPrice) * 100;
   
   // Normalize momentum to scale 0 to 100
-  let momentumScore = Math.min(100, Math.max(0, 50 + roc * 25));
+  const momentumScore = Math.min(100, Math.max(0, 50 + roc * 25));
 
   // Quant score combines mean-reversion opportunity with strong directional momentum
   let quantScore = 50;
